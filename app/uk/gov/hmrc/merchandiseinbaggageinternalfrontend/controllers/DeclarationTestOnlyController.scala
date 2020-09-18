@@ -29,20 +29,15 @@ class DeclarationTestOnlyController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) with Forms with MIBBackendService {
 
   def declarations(): Action[AnyContent] = Action.async { implicit request  =>
-    Future.successful(Ok(views(declarationForm("declarationForm"))))
+    Future.successful(Ok(views(declarationForm(declarationFormIdentifier))))
   }
 
-  def findDeclaration(declarationId: String): Action[AnyContent] = Action.async { implicit request  =>
-    import cats.instances.future._
-    (for {
-      eval        <- EitherT.liftF(declarationById(httpClient, DeclarationId(declarationId)).map(res => Json.parse(res.body).asOpt[Declaration]))
-      declaration <- EitherT.fromOption(eval, DeclarationNotFound)
-    } yield declaration).fold( {
-        e: BusinessError => InternalServerError(s"$e")
-      }, dec   => Ok(declarationFoundView(dec)))
-      .recover({
-        case _ => NotFound("Declaration Not Found")
-      })
+  def findDeclaration(declarationId: DeclarationId): Action[AnyContent] = Action.async { implicit request =>
+    declarationById(httpClient,declarationId).map(declaration =>
+      Ok(declarationFoundView(declaration))
+    ).recover({
+      case _ => NotFound("Declaration Not Found")
+    })
   }
 
   def onSubmit(): Action[AnyContent] = Action.async { implicit request  =>
@@ -51,8 +46,7 @@ class DeclarationTestOnlyController @Inject()(mcc: MessagesControllerComponents,
       for {
         declarationRequest  <- EitherT.fromOption(Json.parse(bindForm.data(declarationFormIdentifier))
           .asOpt[DeclarationRequest], InvalidDeclarationRequest)
-        eventualResponse = addDeclaration(httpClient, declarationRequest).map(res => Json.parse(res.body).asOpt[DeclarationIdResponse])
-        declarationResponse <- EitherT.fromOptionF[Future, BusinessError, DeclarationIdResponse](eventualResponse, InvalidDeclarationRequest)
+        declarationResponse <- EitherT.liftF(addDeclaration(httpClient, declarationRequest))
       } yield declarationResponse
 
     newDeclaration.fold ({
@@ -61,7 +55,7 @@ class DeclarationTestOnlyController @Inject()(mcc: MessagesControllerComponents,
       case err                       =>
         InternalServerError(s"$err")
     }, declarationIdResponse =>
-      Redirect(routes.DeclarationTestOnlyController.findDeclaration(declarationIdResponse.id.value))
+      Redirect(routes.DeclarationTestOnlyController.findDeclaration(declarationIdResponse.id))
     ).recover({case err => InternalServerError(s"$err") })
   }
 
