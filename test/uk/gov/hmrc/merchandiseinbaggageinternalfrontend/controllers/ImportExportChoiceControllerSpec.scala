@@ -21,18 +21,26 @@ import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.BaseSpecWithApplication
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.ImportExportChoice
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ImportExportChoiceControllerSpec extends BaseSpecWithApplication {
 
   val view = app.injector.instanceOf[ImportExportChoice]
-  val controller = new ImportExportChoiceController(component, view)
+  val repo = app.injector.instanceOf[DeclarationJourneyRepository]
+  val controller = new ImportExportChoiceController(component, view, repo)
 
   "return 200 with radio button" in {
     val request = FakeRequest(GET, routes.ImportExportChoiceController.onPageLoad.url).withSession((SessionKeys.sessionId, "123"))
       .withCSRFToken.asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
 
-    status(controller.onPageLoad(request)) mustBe 200
+    val eventualResult = controller.onPageLoad(request)
+    status(eventualResult) mustBe 200
+    contentAsString(eventualResult) must include(messageApi("importExportChoice.header"))
+    contentAsString(eventualResult) must include(messageApi("importExportChoice.MakeExport"))
+    contentAsString(eventualResult) must include(messageApi("importExportChoice.MakeImport"))
+    contentAsString(eventualResult) must include(messageApi("site.continue"))
   }
 }
