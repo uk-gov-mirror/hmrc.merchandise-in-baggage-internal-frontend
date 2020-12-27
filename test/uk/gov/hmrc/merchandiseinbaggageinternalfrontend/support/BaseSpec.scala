@@ -56,8 +56,12 @@ trait BaseSpecWithApplication
   override def fakeApplication(): Application = new GuiceApplicationBuilder().configure(configMap).build()
 
   private val configMap: Map[String, Any] = Map[String, Any](
-    "application.router"              -> "testOnlyDoNotUseInAppConf.Routes",
-    "microservice.services.auth.port" -> WireMockSupport.port
+    "application.router"                                 -> "testOnlyDoNotUseInAppConf.Routes",
+    "microservice.services.auth.port"                    -> WireMockSupport.port,
+    "microservice.services.address-lookup-frontend.port" -> WireMockSupport.port,
+    "microservice.services.currency-conversion.port"     -> WireMockSupport.port,
+    "microservice.services.merchandise-in-baggage.port"  -> WireMockSupport.port,
+    "microservice.services.payment.port"                 -> WireMockSupport.port
   )
 
   def buildPost(url: String): FakeRequest[AnyContentAsEmpty.type] =
