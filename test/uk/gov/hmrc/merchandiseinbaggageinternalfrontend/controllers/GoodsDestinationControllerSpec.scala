@@ -46,7 +46,7 @@ class GoodsDestinationControllerSpec extends BaseSpecWithApplication {
       val eventualResult = controller.onPageLoad(request)
       status(eventualResult) mustBe 200
       contentAsString(eventualResult) must include(messageApi("goodsDestination.Import.title"))
-      contentAsString(eventualResult) must include(messageApi("goodsDestination.Import.title"))
+      contentAsString(eventualResult) must include(messageApi("goodsDestination.Import.heading"))
       contentAsString(eventualResult) must include(messageApi("goodsDestination.NorthernIreland"))
       contentAsString(eventualResult) must include(messageApi("goodsDestination.GreatBritain"))
     }

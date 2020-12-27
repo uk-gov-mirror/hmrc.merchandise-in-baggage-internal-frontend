@@ -16,4 +16,95 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend
 
-trait CoreTestData {}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.testonly.TestOnlyController
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.api._
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.calculation.CalculationResult
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsDestinations.{GreatBritain, NorthernIreland}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsVatRates.Twenty
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.YesNo.No
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
+
+import java.time.LocalDate
+
+trait CoreTestData {
+  val payApiRequest: PayApiRequest = PayApiRequest(
+    MibReference("MIBI1234567890"),
+    AmountInPence(1),
+    AmountInPence(2),
+    AmountInPence(3),
+    "http://localhost:8281/declare-commercial-goods/declaration-confirmation",
+    "http://localhost:8281/declare-commercial-goods/check-your-answers"
+  )
+
+  val sessionId: SessionId = SessionId()
+
+  val startedImportJourney: DeclarationJourney = DeclarationJourney(sessionId, Import)
+
+  val startedExportJourney: DeclarationJourney = DeclarationJourney(sessionId, Export)
+
+  val startedImportToGreatBritainJourney: DeclarationJourney =
+    startedImportJourney.copy(maybeGoodsDestination = Some(GreatBritain))
+
+  val startedImportToNorthernIrelandJourney: DeclarationJourney =
+    startedImportJourney.copy(maybeGoodsDestination = Some(NorthernIreland))
+
+  val completedGoodsEntry: GoodsEntry = TestOnlyController.completedGoodsEntry
+
+  val overThresholdGoods: GoodsEntries = GoodsEntries(
+    completedGoodsEntry.copy(
+      maybePurchaseDetails = Some(PurchaseDetails("1915", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European"))))))
+
+  val completedDeclarationJourney: DeclarationJourney = TestOnlyController.sampleDeclarationJourney(sessionId)
+
+  val declaration: Declaration = completedDeclarationJourney.declarationIfRequiredAndComplete.get
+
+  val incompleteDeclarationJourney: DeclarationJourney = completedDeclarationJourney.copy(maybeJourneyDetailsEntry = None)
+
+  val aCategoryQuantityOfGoods: CategoryQuantityOfGoods = CategoryQuantityOfGoods("test good", "123")
+
+  val startedGoodsEntry: GoodsEntry = GoodsEntry(Some(aCategoryQuantityOfGoods))
+
+  val importJourneyWithStartedGoodsEntry: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = GoodsEntries(startedGoodsEntry))
+
+  val importJourneyWithOneCompleteAndOneEmptyGoodsEntry: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = GoodsEntries(Seq(completedGoodsEntry, GoodsEntry.empty)))
+
+  val importJourneyWithOneCompleteAndOneStartedGoodsEntry: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = GoodsEntries(Seq(completedGoodsEntry, startedGoodsEntry)))
+
+  val importJourneyWithOneCompleteGoodsEntry: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = GoodsEntries(completedGoodsEntry))
+
+  val importJourneyWithTwoCompleteGoodsEntries: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = completedDeclarationJourney.goodsEntries)
+
+  val previouslyCompleteJourneyWithIncompleteGoodsEntryAdded: DeclarationJourney =
+    completedDeclarationJourney.copy(goodsEntries = GoodsEntries(Seq(completedGoodsEntry, completedGoodsEntry, startedGoodsEntry)))
+
+  val importJourneyWithGoodsOverThreshold: DeclarationJourney =
+    startedImportToGreatBritainJourney.copy(goodsEntries = overThresholdGoods)
+
+  val completedImportJourneyWithGoodsOverThreshold: DeclarationJourney =
+    completedDeclarationJourney.copy(goodsEntries = overThresholdGoods)
+
+  val journeyDate: LocalDate = LocalDate.now
+
+  val doverJourneyEntry: JourneyDetailsEntry = JourneyDetailsEntry("DVR", journeyDate)
+  val heathrowJourneyEntry: JourneyDetailsEntry = JourneyDetailsEntry("LHR", journeyDate)
+
+  val sparseCompleteDeclarationJourney: DeclarationJourney =
+    completedDeclarationJourney
+      .copy(maybeIsACustomsAgent = Some(No), maybeJourneyDetailsEntry = Some(JourneyDetailsEntry("LHR", journeyDate)))
+
+  val aPurchaseDetails: PurchaseDetails =
+    PurchaseDetails("199.99", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European")))
+  val aGoods: Goods = Goods(aCategoryQuantityOfGoods, Twenty, Country("FR", "title.france", "FR", isEu = true, Nil), aPurchaseDetails)
+
+  val aCalculationResult: CalculationResult = CalculationResult(AmountInPence(10L), AmountInPence(5), AmountInPence(7))
+  val aDeclarationGood: DeclarationGoods = DeclarationGoods(aGoods)
+  val aPaymentCalculation: PaymentCalculation = PaymentCalculation(aGoods, aCalculationResult)
+  val aPaymentCalculations: PaymentCalculations = PaymentCalculations(Seq(aPaymentCalculation))
+
+}

@@ -29,6 +29,7 @@ import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents}
 import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
 import play.api.test.Helpers.POST
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.auth.StrideAuthAction
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.{AppConfig, MongoConfiguration}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyActionProvider
@@ -40,7 +41,8 @@ import scala.concurrent.Await
 
 trait BaseSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
-trait BaseSpecWithApplication extends BaseSpec with GuiceOneAppPerSuite with WireMockSupport with MongoConfiguration with ScalaFutures {
+trait BaseSpecWithApplication
+    extends BaseSpec with GuiceOneAppPerSuite with WireMockSupport with MongoConfiguration with ScalaFutures with CoreTestData {
   lazy val injector: Injector = fakeApplication().injector
   lazy val component: MessagesControllerComponents = injector.instanceOf[MessagesControllerComponents]
   lazy val strideAuth: StrideAuthAction = injector.instanceOf[StrideAuthAction]
