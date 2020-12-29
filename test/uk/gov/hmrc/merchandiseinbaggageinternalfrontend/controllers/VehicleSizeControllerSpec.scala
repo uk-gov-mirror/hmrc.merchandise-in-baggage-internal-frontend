@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.{GoodsInVehicleView, VehicleSizeView}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.VehicleSizeView
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

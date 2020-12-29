@@ -33,7 +33,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class PaymentCalculationControllerSpec extends BaseSpecWithApplication {
 
   val view = app.injector.instanceOf[PaymentCalculationView]
-  val calculationService = app.injector.instanceOf[CalculationService]
   val controller = new PaymentCalculationController(component, actionProvider, calculationService, view)
 
   "onPageLoad" should {
