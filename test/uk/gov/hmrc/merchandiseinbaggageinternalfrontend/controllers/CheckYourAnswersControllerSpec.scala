@@ -46,7 +46,7 @@ class CheckYourAnswersControllerSpec extends BaseSpecWithApplication {
     exportView)
 
   "onPageLoad" should {
-    "return 200 with radio buttons" in {
+    "return 200" in {
       givenTheUserIsAuthenticatedAndAuthorised()
       givenADeclarationJourneyIsPersisted(completedDeclarationJourney)
       givenSuccessfulCurrencyConversionResponse()
