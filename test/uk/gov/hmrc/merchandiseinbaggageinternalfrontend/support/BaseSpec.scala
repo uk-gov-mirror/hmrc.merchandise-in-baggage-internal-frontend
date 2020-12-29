@@ -32,10 +32,11 @@ import play.api.test.Helpers.POST
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.auth.StrideAuthAction
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.{AppConfig, MongoConfiguration}
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.AddressLookupFrontendConnector
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.{AddressLookupFrontendConnector, MibConnector, PaymentConnector}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyActionProvider
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.service.CalculationService
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -54,6 +55,9 @@ trait BaseSpecWithApplication
   lazy val repo = injector.instanceOf[DeclarationJourneyRepository]
   lazy val actionProvider = injector.instanceOf[DeclarationJourneyActionProvider]
   lazy val addressLookupConnector = injector.instanceOf[AddressLookupFrontendConnector]
+  lazy val calculationService = injector.instanceOf[CalculationService]
+  lazy val paymentConnector = injector.instanceOf[PaymentConnector]
+  lazy val mibConnector = injector.instanceOf[MibConnector]
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder().configure(configMap).build()
 
