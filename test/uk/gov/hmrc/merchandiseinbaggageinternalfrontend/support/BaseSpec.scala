@@ -32,6 +32,7 @@ import play.api.test.Helpers.POST
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.auth.StrideAuthAction
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.{AppConfig, MongoConfiguration}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.AddressLookupFrontendConnector
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyActionProvider
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
@@ -52,6 +53,7 @@ trait BaseSpecWithApplication
 
   lazy val repo = injector.instanceOf[DeclarationJourneyRepository]
   lazy val actionProvider = injector.instanceOf[DeclarationJourneyActionProvider]
+  lazy val addressLookupConnector = injector.instanceOf[AddressLookupFrontendConnector]
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder().configure(configMap).build()
 
