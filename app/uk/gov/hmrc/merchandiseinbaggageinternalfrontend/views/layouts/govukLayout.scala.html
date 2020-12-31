@@ -28,7 +28,8 @@
         hmrcReportTechnicalIssueHelper: hmrcReportTechnicalIssueHelper,
         hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
         appConfig: AppConfig,
-        hmrcStandardFooter: HmrcStandardFooter
+        hmrcStandardFooter: HmrcStandardFooter,
+        siteHeader: components.siteHeader,
 )
 
 @(
@@ -47,17 +48,10 @@
 }
 
 @headerDefault = {
-@headerBlock.getOrElse {
-    @govukHeader(Header(
-        homepageUrl = Some("https://www.gov.uk/"),
-        serviceName = Some(messages("service.name")),
-        attributes = Map(("style", "pointer-events: none; cursor: default;")),
-        containerClasses = None))
-}
+@siteHeader()
 }
 
 @beforeContentDefault = {
-@phaseBanner("beta")
 @{
     maybeBackButtonUrl.fold(Html("")) { url =>
         // for some reason the supplied Call path does not always start with /declare-commercial-goods/
