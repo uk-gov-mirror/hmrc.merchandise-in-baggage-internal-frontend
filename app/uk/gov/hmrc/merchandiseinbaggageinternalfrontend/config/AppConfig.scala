@@ -21,12 +21,10 @@ import play.api.{Configuration, Environment}
 import pureconfig.ConfigSource
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfigSource.configSource
 import pureconfig.generic.auto._
-import java.time.LocalDate
 import javax.inject.Singleton
 
 @Singleton
-class AppConfig @Inject()(val config: Configuration, val env: Environment)
-    extends MongoConfiguration with MibConfiguration with ArrivalDateValidationFlagConfiguration {
+class AppConfig @Inject()(val config: Configuration, val env: Environment) extends MongoConfiguration with MibConfiguration {
 
   val serviceIdentifier = "mib"
 
@@ -66,14 +64,3 @@ trait MibConfiguration {
 }
 
 final case class MIBConf(protocol: String, host: String, port: Int)
-
-//TODO to be removed in 2021
-trait ArrivalDateValidationFlagConfiguration {
-  lazy val arrivalOrDepartureDateFlag: ArrivalDateValidationFlagConf =
-    configSource("retrospective-declaration-date").loadOrThrow[ArrivalDateValidationFlagConf]
-
-  import arrivalOrDepartureDateFlag._
-  lazy val configurationDate = LocalDate.of(year, month, day)
-}
-
-final case class ArrivalDateValidationFlagConf(is2021: Boolean, year: Int, month: Int, day: Int)

@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.forms
 
-import java.time.LocalDate
-
 import play.api.data.{Form, FormError}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.forms.JourneyDetailsForm._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.forms.behaviours.FieldBehaviours
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationType, JourneyDetailsEntry}
+
+import java.time.LocalDate
 
 class JourneyDetailsFormSpec extends FieldBehaviours {
   private val firstJanuary = LocalDate.of(2021, 1, 1)
@@ -76,15 +76,6 @@ class JourneyDetailsFormSpec extends FieldBehaviours {
 
       importSubmittedForm.errors.head.message mustBe s"$dateInPastMessageKey.within.30.days"
       exportSubmittedForm.errors.head.message mustBe "journeyDetails.dateOfTravel.error.Export.dateInPast.within.30.days"
-    }
-
-    "bind config flag date of arrival/departure if flag is false for QA" in {
-      val dateFromInPastIn2021 = LocalDate.of(2021, 1, 1)
-      val dateFromInPastIn2020 = LocalDate.of(2020, 12, 31)
-      val today = LocalDate.now
-
-      form(Import, today.plusMonths(1), false).bind(formData(dateFromInPastIn2021)).errors mustBe Seq.empty
-      form(Import, is2021Flag = true).bind(formData(dateFromInPastIn2020)).errors.head.message mustBe dateInPastMessageKey
     }
   }
 

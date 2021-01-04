@@ -18,7 +18,7 @@ package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors
 
 import play.api.Logging
 import play.api.http.Status
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.MibConfiguration
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.api.Declaration
