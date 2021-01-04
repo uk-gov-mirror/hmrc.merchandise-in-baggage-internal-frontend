@@ -17,6 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors
 
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.currencyconversion.ConversionRatePeriod
 
 import java.time.LocalDate.now

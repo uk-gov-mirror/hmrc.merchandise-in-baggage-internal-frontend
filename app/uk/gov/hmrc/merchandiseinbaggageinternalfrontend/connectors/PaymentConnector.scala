@@ -17,7 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors
 
 import play.api.http.Status
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.PaymentApiUrls.payUrl
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.api.{PayApiRequest, PayApiResponse}
