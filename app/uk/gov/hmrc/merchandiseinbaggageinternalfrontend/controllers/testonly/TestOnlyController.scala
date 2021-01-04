@@ -27,7 +27,7 @@ import uk.gov.hmrc.merchandiseinbaggageinternalfrontend._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.testonly.TestOnlyController.sampleDeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.forms.testonly.DeclarationJourneyFormProvider
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.adresslookup.{Address, AddressLookupCountry}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.addresslookup.{Address, AddressLookupCountry}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.api.PurchaseDetails
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsDestinations.GreatBritain

@@ -21,7 +21,7 @@ import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.adresslookup.{Address, AddressLookupCountry}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.addresslookup.{Address, AddressLookupCountry}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.AddressLookupFrontendStub._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised

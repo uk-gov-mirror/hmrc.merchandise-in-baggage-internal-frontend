@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor,
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.HeaderNames.LOCATION
 import play.api.libs.json.Json
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.adresslookup.Address
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.addresslookup.Address
 
 object AddressLookupFrontendStub {
 

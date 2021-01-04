@@ -19,7 +19,7 @@ package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core
 import enumeratum.EnumEntry
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.adresslookup.Address
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.addresslookup.Address
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.api.{Declaration, JourneyDetails, JourneyInSmallVehicle, JourneyOnFoot, PurchaseDetails}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.calculation.CalculationRequest
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsDestinations.{GreatBritain, NorthernIreland}
