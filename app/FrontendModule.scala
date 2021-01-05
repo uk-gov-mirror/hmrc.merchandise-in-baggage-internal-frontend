@@ -36,7 +36,7 @@ class FrontendModule(unused: Environment, configuration: Configuration) extends 
 
   override def configure(): Unit = {
     bindBaseUrl("currencyConversionBaseUrl", "currency-conversion")
-    bindBaseUrl("paymentBaseUrl", "payment")
+    bindBaseUrl("tpsBackendBaseUrl", "tps-payments-backend")
     bindBaseUrl("mibBackendBaseUrl", "merchandise-in-baggage")
     bindBaseUrl("addressLookupFrontendBaseUrl", "address-lookup-frontend")
     bindConstant()

@@ -22,10 +22,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Export
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.tpspayments.TpsId
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.CurrencyConversionSupport.givenSuccessfulCurrencyConversionResponse
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MibBackendStub.givenDeclarationIsPersistedInBackend
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.PayApiStub._
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.TpsPaymentsBackendStub._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.{CheckYourAnswersExportView, CheckYourAnswersImportView}
 
@@ -33,13 +34,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class CheckYourAnswersControllerSpec extends BaseSpecWithApplication {
 
-  val importView = app.injector.instanceOf[CheckYourAnswersImportView]
-  val exportView = app.injector.instanceOf[CheckYourAnswersExportView]
+  val importView: CheckYourAnswersImportView = app.injector.instanceOf[CheckYourAnswersImportView]
+  val exportView: CheckYourAnswersExportView = app.injector.instanceOf[CheckYourAnswersExportView]
   val controller = new CheckYourAnswersController(
     component,
     actionProvider,
     calculationService,
-    paymentConnector,
+    tpsPaymentsService,
     mibConnector,
     repo,
     importView,
@@ -79,7 +80,7 @@ class CheckYourAnswersControllerSpec extends BaseSpecWithApplication {
       givenSuccessfulCurrencyConversionResponse()
       givenADeclarationJourneyIsPersisted(completedDeclarationJourney)
       givenDeclarationIsPersistedInBackend()
-      givenTaxArePaid()
+      givenTaxArePaid(TpsId("123"))
 
       val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
         .withSession((SessionKeys.sessionId, sessionId.value))
@@ -88,7 +89,7 @@ class CheckYourAnswersControllerSpec extends BaseSpecWithApplication {
 
       val eventualResult = controller.onSubmit()(request)
       status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some("http://localhost:17777/pay/initiate-journey") //TODO: fix this test
+      redirectLocation(eventualResult) mustBe Some("http://localhost:9124/tps-payments/make-payment/mib/123")
     }
 
     "redirect to payment page after successful form submit for Exports" in {
