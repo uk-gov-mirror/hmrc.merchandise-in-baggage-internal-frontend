@@ -96,5 +96,6 @@ class CheckYourAnswersController @Inject()(
       taxDue <- calculationService.paymentCalculation(declaration.declarationGoods)
       _      <- mibConnector.persistDeclaration(declaration.copy(maybeTotalCalculationResult = Some(taxDue.totalCalculationResult)))
       tpsId  <- tpsPaymentsService.createTpsPayments(request.pid, declaration, taxDue)
-    } yield Redirect(s"${appConfig.tpsFrontendBaseUrl}/tps-payments/make-payment/mib/${tpsId.value}")
+    } yield
+      Redirect(s"${appConfig.tpsFrontendBaseUrl}/tps-payments/make-payment/mib/${tpsId.value}").addingToSession("TPS_ID" -> tpsId.value)
 }
