@@ -17,7 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers.{contentAsString, _}
-
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{AmountInPence, TotalCalculationResult}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.DeclarationConfirmationView
@@ -33,7 +33,12 @@ class DeclarationConfirmationControllerSpec extends BaseSpecWithApplication {
     "return 200" in {
       givenTheUserIsAuthenticatedAndAuthorised()
       givenADeclarationJourneyIsPersisted(completedDeclarationJourney)
-      MibBackendStub.givenPersistedDeclarationIsFound(declaration, declaration.declarationId)
+      val persistedDeclaration = declaration
+        .copy(
+          maybeTotalCalculationResult =
+            Some(TotalCalculationResult(aPaymentCalculations, AmountInPence(10L), AmountInPence(5), AmountInPence(2), AmountInPence(3)))
+        )
+      MibBackendStub.givenPersistedDeclarationIsFound(persistedDeclaration, persistedDeclaration.declarationId)
 
       val request = buildGet(routes.DeclarationConfirmationController.onPageLoad().url, sessionId)
 
@@ -52,6 +57,7 @@ class DeclarationConfirmationControllerSpec extends BaseSpecWithApplication {
       result must include(messages("declarationConfirmation.Import.ul.3"))
       result must include(messages("declarationConfirmation.makeAnotherDeclaration"))
       result must include(messages("declarationConfirmation.printOrSave.label"))
+      result must include(messages("declarationConfirmation.amountPaid"))
     }
   }
 }
