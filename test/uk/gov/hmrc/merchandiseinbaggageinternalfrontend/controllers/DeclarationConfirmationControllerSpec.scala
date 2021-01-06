@@ -17,22 +17,23 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers.{contentAsString, _}
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{AmountInPence, TotalCalculationResult}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{AmountInPence, DeclarationJourney, TotalCalculationResult}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.DeclarationConfirmationView
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DeclarationConfirmationControllerSpec extends BaseSpecWithApplication {
+class DeclarationConfirmationControllerSpec extends DeclarationJourneyControllerSpec {
 
   val view = app.injector.instanceOf[DeclarationConfirmationView]
-  val controller = new DeclarationConfirmationController(component, actionProvider, view, mibConnector, repo)
+  val controller: DeclarationJourney => DeclarationConfirmationController =
+    declarationJourney =>
+      new DeclarationConfirmationController(component, stubProvider(declarationJourney), view, mibConnector, stubRepo(declarationJourney))
 
   "onPageLoad" should {
     "return 200" in {
       givenTheUserIsAuthenticatedAndAuthorised()
-      givenADeclarationJourneyIsPersisted(completedDeclarationJourney)
       val persistedDeclaration = declaration
         .copy(
           maybeTotalCalculationResult =
@@ -41,8 +42,7 @@ class DeclarationConfirmationControllerSpec extends BaseSpecWithApplication {
       MibBackendStub.givenPersistedDeclarationIsFound(persistedDeclaration, persistedDeclaration.declarationId)
 
       val request = buildGet(routes.DeclarationConfirmationController.onPageLoad().url, sessionId)
-
-      val eventualResult = controller.onPageLoad()(request)
+      val eventualResult = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).onPageLoad()(request)
       val result = contentAsString(eventualResult)
 
       status(eventualResult) mustBe 200
@@ -57,7 +57,6 @@ class DeclarationConfirmationControllerSpec extends BaseSpecWithApplication {
       result must include(messages("declarationConfirmation.Import.ul.3"))
       result must include(messages("declarationConfirmation.makeAnotherDeclaration"))
       result must include(messages("declarationConfirmation.printOrSave.label"))
-      result must include(messages("declarationConfirmation.amountPaid"))
     }
   }
 }
