@@ -17,7 +17,6 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, GoodsDestinations, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -29,22 +28,25 @@ class CannotUseServiceControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => CannotUseServiceController =
     declarationJourney => new CannotUseServiceController(component, stubProvider(declarationJourney), view)
 
-  "onPageLoad" should {
-    "return 200 with expected content" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val journey =
-        DeclarationJourney(SessionId("123"), DeclarationType.Import, maybeGoodsDestination = Some(GoodsDestinations.GreatBritain))
-      val request = buildGet(routes.CannotUseServiceController.onPageLoad.url)
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 for $importOrExport with expected content" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val journey =
+          DeclarationJourney(SessionId("123"), importOrExport, maybeGoodsDestination = Some(GoodsDestinations.GreatBritain))
+        val request = buildGet(routes.CannotUseServiceController.onPageLoad.url)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
-      val result = contentAsString(eventualResult)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
+        val result = contentAsString(eventualResult)
 
-      status(eventualResult) mustBe 200
-      result must include(messageApi("cannotUseService.Import.title"))
-      result must include(messageApi("cannotUseService.Import.heading"))
-      result must include(messageApi("cannotUseService.Import.p1"))
-      result must include(messageApi("cannotUseService.Import.p2"))
-      result must include(messageApi("cannotUseService.Import.link.text"))
+        status(eventualResult) mustBe 200
+        result must include(messageApi(s"cannotUseService.$importOrExport.title"))
+        result must include(messageApi(s"cannotUseService.$importOrExport.heading"))
+        result must include(messageApi(s"cannotUseService.$importOrExport.p1"))
+        result must include(messageApi(s"cannotUseService.$importOrExport.p2"))
+        result must include(messageApi(s"cannotUseService.$importOrExport.link.text"))
+        result must include(messageApi(s"cannotUseService.$importOrExport.link.text"))
+      }
     }
   }
 }
