@@ -17,8 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, SessionId}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.CannotUseServiceIrelandView
@@ -29,22 +28,24 @@ class CannotUseServiceIrelandControllerSpec extends DeclarationJourneyController
   val controller: DeclarationJourney => CannotUseServiceIrelandController =
     declarationJourney => new CannotUseServiceIrelandController(component, stubProvider(declarationJourney), view)
 
-  "onPageLoad" should {
-    "return 200 with expected content" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val journey = DeclarationJourney(SessionId("123"), DeclarationType.Import)
-      givenADeclarationJourneyIsPersisted(journey)
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 for type $importOrExport with expected content" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-      val request = buildGet(routes.CannotUseServiceIrelandController.onPageLoad.url)
+        val journey = DeclarationJourney(SessionId("123"), importOrExport)
+        val request = buildGet(routes.CannotUseServiceIrelandController.onPageLoad.url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
+        val result = contentAsString(eventualResult)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
-      val result = contentAsString(eventualResult)
-
-      status(eventualResult) mustBe 200
-      result must include(messageApi("cannotUseServiceIreland.title"))
-      result must include(messageApi("cannotUseServiceIreland.heading"))
-      result must include(messageApi("cannotUseServiceIreland.p1"))
-      result must include(messageApi("cannotUseServiceIreland.p2"))
+        status(eventualResult) mustBe 200
+        result must include(messageApi("cannotUseServiceIreland.title"))
+        result must include(messageApi("cannotUseServiceIreland.heading"))
+        result must include(messageApi("cannotUseServiceIreland.p1"))
+        result must include(messageApi("cannotUseServiceIreland.p2"))
+        result must include(messageApi(s"cannotUseServiceIreland.p1.$importOrExport.a.text"))
+        result must include(messageApi(s"cannotUseServiceIreland.p1.$importOrExport.a.href"))
+      }
     }
   }
 }

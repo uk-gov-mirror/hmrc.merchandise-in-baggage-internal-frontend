@@ -18,7 +18,7 @@ package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationJourney
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Export
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.tpspayments.TpsId
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.CurrencyConversionSupport.givenSuccessfulCurrencyConversionResponse
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MibBackendStub.givenDeclarationIsPersistedInBackend
@@ -46,29 +46,51 @@ class CheckYourAnswersControllerSpec extends DeclarationJourneyControllerSpec {
         importView,
         exportView)
 
-  "onPageLoad" should {
-    "return 200" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      givenSuccessfulCurrencyConversionResponse()
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 for type $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        givenSuccessfulCurrencyConversionResponse()
 
-      val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, sessionId)
+        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, sessionId)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).onPageLoad()(request)
-      val result = contentAsString(eventualResult)
+        val eventualResult = controller(
+          givenADeclarationJourneyIsPersisted(completedDeclarationJourney.copy(declarationType = importOrExport))).onPageLoad()(request)
+        val result = contentAsString(eventualResult)
 
-      status(eventualResult) mustBe 200
-      result must include(messages("checkYourAnswers.title"))
-      result must include(messages("checkYourAnswers.change"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.category"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.quantity"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.vatRate"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.country"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.price"))
-      result must include(messages("checkYourAnswers.detailsOfTheGoods.paymentDue"))
-      result must include(messages("checkYourAnswers.addMoreGoods"))
-      result must include(messages("checkYourAnswers.personalDetails"))
-      //TODO: Add others
+        status(eventualResult) mustBe 200
+        result must include(messages("checkYourAnswers.title"))
+        result must include(messages("checkYourAnswers.change"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods.category"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods.quantity"))
+        result must include(messages("checkYourAnswers.addMoreGoods"))
+        result must include(messages("checkYourAnswers.personalDetails"))
+        result must include(messages("checkYourAnswers.journeyDetails.travellingByVehicle"))
+        result must include(messages("checkYourAnswers.journeyDetails.vehicleRegistrationNumber"))
+        result must include(messages("checkYourAnswers.sendDeclaration.acknowledgement"))
+        result must include(messages(s"checkYourAnswers.sendDeclaration.$importOrExport.acknowledgement.1"))
+        result must include(messages("checkYourAnswers.sendDeclaration.confirm"))
+        result must include(messages("checkYourAnswers.sendDeclaration.warning"))
+        result must include(messages("checkYourAnswers.sendDeclaration.warning.message"))
+
+        if (importOrExport == Import) {
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.vatRate"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.country"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.price"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.paymentDue"))
+          result must include(messages("checkYourAnswers.journeyDetails.placeOfArrival"))
+          result must include(messages("checkYourAnswers.journeyDetails.dateOfArrival"))
+          result must include(messages("checkYourAnswers.payButton"))
+        }
+
+        if (importOrExport == Export) {
+          result must include(messages("checkYourAnswers.makeDeclarationButton"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.destination"))
+          result must include(messages("checkYourAnswers.journeyDetails.placeOfDeparture"))
+          result must include(messages("checkYourAnswers.journeyDetails.dateOfDeparture"))
+        }
+      }
     }
   }
 

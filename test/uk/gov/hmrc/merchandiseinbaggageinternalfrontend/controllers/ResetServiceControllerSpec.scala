@@ -46,5 +46,5 @@ class ResetServiceControllerSpec extends DeclarationJourneyControllerSpec {
     }
   }
 
-  override def beforeEach(): Unit = injector.instanceOf[DeclarationJourneyRepository].deleteAll().futureValue
+  override def beforeEach(): Unit = repo.deleteAll().futureValue
 }

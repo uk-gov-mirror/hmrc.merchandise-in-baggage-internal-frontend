@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support
 
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.mvc.{AnyContentAsEmpty, DefaultActionBuilder, MessagesControllerComponents}
@@ -29,14 +30,15 @@ import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.auth.StrideAuthAction
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.{AddressLookupFrontendConnector, MibConnector}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyActionProvider
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, SessionId}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.service.{CalculationService, TpsPaymentsService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication {
+trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication with ScalaCheckPropertyChecks {
   lazy val injector: Injector = app.injector
   implicit lazy val appConf: AppConfig = injector.instanceOf[AppConfig]
 
@@ -53,6 +55,21 @@ trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication {
   lazy val tpsPaymentsService = injector.instanceOf[TpsPaymentsService]
   lazy val mibConnector = injector.instanceOf[MibConnector]
 
+  private lazy val db: () => DefaultDB = app.injector.instanceOf[ReactiveMongoComponent].mongoConnector.db
+
+  lazy val stubRepo: DeclarationJourney => DeclarationJourneyRepository = declarationJourney =>
+    new DeclarationJourneyRepository(db) {
+      override def insert(declarationJourney: DeclarationJourney): Future[DeclarationJourney] = Future.successful(declarationJourney)
+      override def findBySessionId(sessionId: SessionId): Future[Option[DeclarationJourney]] = Future.successful(Some(declarationJourney))
+      override def upsert(declarationJourney: DeclarationJourney): Future[DeclarationJourney] = Future.successful(declarationJourney)
+  }
+
+  lazy val stubProvider: DeclarationJourney => DeclarationJourneyActionProvider = declarationJourney =>
+    new DeclarationJourneyActionProvider(defaultBuilder, stubRepo(declarationJourney), strideAuth)
+
+  def givenADeclarationJourneyIsPersisted(declarationJourney: DeclarationJourney): DeclarationJourney =
+    stubRepo(declarationJourney).findBySessionId(declarationJourney.sessionId).futureValue.get
+
   def buildPost(url: String, sessionId: SessionId = SessionId("123")): FakeRequest[AnyContentAsEmpty.type] =
     buildRequest(POST, url, sessionId)
 
@@ -65,18 +82,5 @@ trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication {
       .withCSRFToken
       .asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
 
-  private lazy val db: () => DefaultDB = app.injector.instanceOf[ReactiveMongoComponent].mongoConnector.db
-
-  lazy val stubRepo: DeclarationJourney => DeclarationJourneyRepository = declarationJourney =>
-    new DeclarationJourneyRepository(db) {
-      override def insert(declarationJourney: DeclarationJourney): Future[DeclarationJourney] = Future.successful(declarationJourney)
-      override def findBySessionId(sessionId: SessionId): Future[Option[DeclarationJourney]] = Future.successful(Some(declarationJourney))
-      override def upsert(declarationJourney: DeclarationJourney): Future[DeclarationJourney] = Future.successful(declarationJourney)
-  }
-
-  def givenADeclarationJourneyIsPersisted(declarationJourney: DeclarationJourney): DeclarationJourney =
-    stubRepo(declarationJourney).findBySessionId(declarationJourney.sessionId).futureValue.get
-
-  lazy val stubProvider: DeclarationJourney => DeclarationJourneyActionProvider = declarationJourney =>
-    new DeclarationJourneyActionProvider(defaultBuilder, stubRepo(declarationJourney), strideAuth)
+  val declarationTypes = Table("declarationType", Import, Export)
 }

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -30,10 +31,8 @@ class AgentDetailsControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => AgentDetailsController =
     declarationJourney => new AgentDetailsController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), view)
 
-  private val journey: DeclarationJourney = DeclarationJourney(
-    SessionId("123"),
-    DeclarationType.Import
-  )
+  private val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), Import)
+
   "onPageLoad" should {
     "return 200 with radio buttons" in {
       givenTheUserIsAuthenticatedAndAuthorised()
@@ -50,7 +49,7 @@ class AgentDetailsControllerSpec extends DeclarationJourneyControllerSpec {
   }
 
   "onSubmit" should {
-    "redirect to next page after successful form submit" in {
+    s"redirect to ${routes.EnterAgentAddressController.onPageLoad().url} for import submit" in {
       givenTheUserIsAuthenticatedAndAuthorised()
 
       val request = buildGet(routes.AgentDetailsController.onSubmit().url)
