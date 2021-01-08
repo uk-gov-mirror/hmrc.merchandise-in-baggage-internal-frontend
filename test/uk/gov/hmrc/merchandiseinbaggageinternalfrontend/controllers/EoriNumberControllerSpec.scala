@@ -17,8 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, SessionId, YesNo}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.EoriNumberView
@@ -31,48 +30,62 @@ class EoriNumberControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => EoriNumberController =
     declarationJourney => new EoriNumberController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), view)
 
-  private val journey: DeclarationJourney =
-    DeclarationJourney(SessionId("123"), DeclarationType.Import, maybeIsACustomsAgent = Some(YesNo.No))
+  forAll(declarationTypes) { importOrExport =>
+    forAll(traderYesOrNoAnswer) { (yesNo, traderOrAgent) =>
+      val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), importOrExport, maybeIsACustomsAgent = Some(yesNo))
+      "onPageLoad" should {
+        s"return 200 with radio buttons for $traderOrAgent $importOrExport" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+          val request = buildGet(routes.EoriNumberController.onPageLoad.url)
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
+          val result = contentAsString(eventualResult)
 
-      val request = buildGet(routes.EoriNumberController.onPageLoad.url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
-      val result = contentAsString(eventualResult)
+          status(eventualResult) mustBe 200
+          result must include(messageApi(s"eoriNumber.$traderOrAgent.$importOrExport.title"))
+          result must include(messageApi(s"eoriNumber.$traderOrAgent.$importOrExport.heading"))
+          result must include(messageApi("eoriNumber.hint"))
+          result must include(messageApi("eoriNumber.a.text"))
+          result must include(messageApi("eoriNumber.a.href"))
+        }
+      }
 
-      status(eventualResult) mustBe 200
-      result must include(messageApi("eoriNumber.trader.Import.title"))
-      result must include(messageApi("eoriNumber.trader.Import.heading"))
-      result must include(messageApi("eoriNumber.hint"))
-    }
-  }
+      "onSubmit" should {
+        s"redirect to next page after successful form submit for $traderOrAgent $importOrExport" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
+          val request = buildGet(routes.EoriNumberController.onSubmit().url)
+            .withFormUrlEncodedBody("eori" -> "GB123456780000")
 
-  "onSubmit" should {
-    "redirect to next page after successful form submit" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val request = buildGet(routes.EoriNumberController.onSubmit().url)
-        .withFormUrlEncodedBody("eori" -> "GB123456780000")
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
+          status(eventualResult) mustBe 303
+          redirectLocation(eventualResult) mustBe Some(routes.TravellerDetailsController.onPageLoad().url)
+        }
 
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.TravellerDetailsController.onPageLoad().url)
-    }
+        s"return 400 with any form errors for $traderOrAgent $importOrExport" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
+          val request = buildGet(routes.EoriNumberController.onSubmit().url)
+            .withFormUrlEncodedBody("eori" -> "in valid")
 
-    "return 400 with any form errors" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val request = buildGet(routes.EoriNumberController.onSubmit().url)
-        .withFormUrlEncodedBody("eori" -> "in valid")
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
+          val result = contentAsString(eventualResult)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
-      val result = contentAsString(eventualResult)
+          status(eventualResult) mustBe 400
+          result must include(messageApi("eoriNumber.error.invalid"))
+        }
 
-      status(eventualResult) mustBe 400
-      result must include(messageApi("eoriNumber.trader.Import.title"))
-      result must include(messageApi("eoriNumber.trader.Import.heading"))
-      result must include(messageApi("eoriNumber.hint"))
+        s"return 400 with required form errors for $traderOrAgent $importOrExport" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
+          val request = buildGet(routes.EoriNumberController.onSubmit().url)
+            .withFormUrlEncodedBody("eori" -> "")
+
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
+          val result = contentAsString(eventualResult)
+
+          status(eventualResult) mustBe 400
+          result must include(messageApi(s"eoriNumber.$traderOrAgent.$importOrExport.error.required"))
+        }
+      }
     }
   }
 }

@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories
 
+import javax.inject.Inject
 import play.api.libs.json.Json.{JsValueWrapper, _}
 import play.api.libs.json._
 import reactivemongo.api.DB
-import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Ascending
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationJourney.id
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, SessionId}
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

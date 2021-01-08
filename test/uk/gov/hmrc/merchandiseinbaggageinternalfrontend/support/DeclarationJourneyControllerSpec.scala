@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support
 
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.mvc.{AnyContentAsEmpty, DefaultActionBuilder, MessagesControllerComponents}
@@ -30,15 +29,14 @@ import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.auth.StrideAuthAction
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.{AddressLookupFrontendConnector, MibConnector}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyActionProvider
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, SessionId}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.service.{CalculationService, TpsPaymentsService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication with ScalaCheckPropertyChecks {
+trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication with PropertyBaseTables {
   lazy val injector: Injector = app.injector
   implicit lazy val appConf: AppConfig = injector.instanceOf[AppConfig]
 
@@ -81,6 +79,4 @@ trait DeclarationJourneyControllerSpec extends BaseSpecWithApplication with Scal
       .withSession(SessionKeys.sessionId -> sessionId.value)
       .withCSRFToken
       .asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
-
-  val declarationTypes = Table("declarationType", Import, Export)
 }

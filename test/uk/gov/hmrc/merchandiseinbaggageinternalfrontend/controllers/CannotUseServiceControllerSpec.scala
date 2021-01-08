@@ -17,7 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, DeclarationType, GoodsDestinations, SessionId}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationJourney, GoodsDestinations, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.CannotUseServiceView

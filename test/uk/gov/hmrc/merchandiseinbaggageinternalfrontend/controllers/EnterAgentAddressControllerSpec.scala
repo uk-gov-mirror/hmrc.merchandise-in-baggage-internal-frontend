@@ -17,7 +17,6 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.addresslookup.{Address, AddressLookupCountry}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.AddressLookupFrontendStub._
@@ -32,48 +31,50 @@ class EnterAgentAddressControllerSpec extends DeclarationJourneyControllerSpec {
     declarationJourney =>
       new EnterAgentAddressController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), addressLookupConnector)
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val journey = DeclarationJourney(SessionId("123"), DeclarationType.Import)
-      givenInitJourney()
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 with radio buttons for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        givenInitJourney()
+        val journey = DeclarationJourney(SessionId("123"), importOrExport)
 
-      val request = buildGet(routes.EnterAgentAddressController.onPageLoad().url)
+        val request = buildGet(routes.EnterAgentAddressController.onPageLoad().url)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some("/blah")
-    }
-
-    "returnFromAddressLookup" must {
-      val url = routes.EnterAgentAddressController.returnFromAddressLookup("id").url
-
-      val address =
-        Address(Seq("address line 1", "address line 2"), Some("AB12 3CD"), AddressLookupCountry("GB", Some("United Kingdom")))
-
-      val request = buildGet(url, sessionId)
-
-      s"store address and redirect to ${routes.EoriNumberController.onPageLoad()}" when {
-        "a declaration journey has been started" in {
-          givenTheUserIsAuthenticatedAndAuthorised()
-          givenConfirmJourney("id", address)
-
-          val result = controller(givenADeclarationJourneyIsPersisted(startedImportJourney)).returnFromAddressLookup("id")(request)
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).get mustEqual routes.EoriNumberController.onPageLoad().url
-        }
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
+        status(eventualResult) mustBe 303
+        redirectLocation(eventualResult) mustBe Some("/blah")
       }
 
-      s"store address and redirect to ${routes.CheckYourAnswersController.onPageLoad()}" when {
-        "a declaration journey is complete" in {
-          givenTheUserIsAuthenticatedAndAuthorised()
-          givenConfirmJourney("id", address)
+      s"returnFromAddressLookup for $importOrExport" must {
+        val url = routes.EnterAgentAddressController.returnFromAddressLookup("id").url
 
-          val result = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).returnFromAddressLookup("id")(request)
+        val address =
+          Address(Seq("address line 1", "address line 2"), Some("AB12 3CD"), AddressLookupCountry("GB", Some("United Kingdom")))
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).get mustEqual routes.CheckYourAnswersController.onPageLoad().url
+        val request = buildGet(url, sessionId)
+
+        s"store address and redirect to ${routes.EoriNumberController.onPageLoad()} for $importOrExport" when {
+          s"a declaration journey has been started for $importOrExport" in {
+            givenTheUserIsAuthenticatedAndAuthorised()
+            givenConfirmJourney("id", address)
+
+            val result = controller(givenADeclarationJourneyIsPersisted(startedImportJourney)).returnFromAddressLookup("id")(request)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).get mustEqual routes.EoriNumberController.onPageLoad().url
+          }
+        }
+
+        s"store address and redirect to ${routes.CheckYourAnswersController.onPageLoad()} for $importOrExport" when {
+          s"a declaration journey is complete for $importOrExport" in {
+            givenTheUserIsAuthenticatedAndAuthorised()
+            givenConfirmJourney("id", address)
+
+            val result = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).returnFromAddressLookup("id")(request)
+
+            status(result) mustEqual SEE_OTHER
+            redirectLocation(result).get mustEqual routes.CheckYourAnswersController.onPageLoad().url
+          }
         }
       }
     }
