@@ -30,7 +30,6 @@ class GoodsDestinationControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => GoodsDestinationController =
     declarationJourney => new GoodsDestinationController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), view)
 
-
   forAll(declarationTypes) { importOrExport =>
     val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), importOrExport)
     "onPageLoad" should {
@@ -50,7 +49,7 @@ class GoodsDestinationControllerSpec extends DeclarationJourneyControllerSpec {
     }
 
     "onSubmit" should {
-      forAll(exciseAndRestrictedGoodsYesOrNoAnswer) { (destination, redirectTo) =>
+      forAll(goodsDestinationAnswer) { (destination, redirectTo) =>
         s"redirect to $redirectTo after successful form submit with GreatBritain for $importOrExport" in {
           givenTheUserIsAuthenticatedAndAuthorised()
           val request = buildGet(routes.ImportExportChoiceController.onSubmit().url)

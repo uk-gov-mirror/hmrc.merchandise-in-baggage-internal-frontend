@@ -40,13 +40,13 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
     (No, routes.EoriNumberController.onPageLoad().url)
   )
 
-  val exciseAndRestrictedGoodsYesOrNoAnswer: TableFor2[GoodsDestination, String] = Table(
+  val goodsDestinationAnswer: TableFor2[GoodsDestination, String] = Table(
     ("radio button NorthernIreland/GreatBritain", "redirectTo"),
     (GreatBritain, routes.ExciseAndRestrictedGoodsController.onPageLoad().url),
     (NorthernIreland, routes.CannotUseServiceIrelandController.onPageLoad().url)
   )
 
-  val goodsDestinationAnswer: TableFor2[YesNo, String] = Table(
+  val exciseAndRestrictedGoodsYesOrNoAnswer: TableFor2[YesNo, String] = Table(
     ("radio button yes/no", "redirectTo"),
     (Yes, routes.CannotUseServiceController.onPageLoad().url),
     (No, routes.ValueWeightOfGoodsController.onPageLoad().url)
