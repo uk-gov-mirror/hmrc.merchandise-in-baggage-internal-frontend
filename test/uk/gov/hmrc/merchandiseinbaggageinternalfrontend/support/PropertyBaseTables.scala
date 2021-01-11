@@ -51,4 +51,16 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
     (Yes, routes.CannotUseServiceController.onPageLoad().url),
     (No, routes.ValueWeightOfGoodsController.onPageLoad().url)
   )
+
+  val goodsInVehicleAnswer: TableFor2[YesNo, String] = Table(
+    ("radio button yes/no", "redirectTo"),
+    (Yes, routes.VehicleSizeController.onPageLoad().url),
+    (No, routes.CheckYourAnswersController.onPageLoad().url)
+  )
+
+  val paymentCalculationThreshold: TableFor2[String, String] = Table(
+    ("threshold", "redirectTo"),
+    ("150001", routes.GoodsOverThresholdController.onPageLoad().url),
+    ("99.99", routes.CustomsAgentController.onPageLoad().url)
+  )
 }

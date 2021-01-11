@@ -17,7 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Export
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.ImportExportChoice
@@ -39,6 +39,8 @@ class ImportExportChoiceControllerSpec extends DeclarationJourneyControllerSpec 
       status(eventualResult) mustBe 200
       result must include(messageApi("declarationType.header"))
       result must include(messageApi("declarationType.title"))
+      result must include(messageApi("declarationType.Import"))
+      result must include(messageApi("declarationType.Export"))
     }
   }
 
@@ -46,17 +48,17 @@ class ImportExportChoiceControllerSpec extends DeclarationJourneyControllerSpec 
     "redirect to next page after successful form submit" in {
       givenTheUserIsAuthenticatedAndAuthorised()
       val request = buildGet(routes.ImportExportChoiceController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "Export")
+        .withFormUrlEncodedBody("value" -> Export.toString)
 
       val eventualResult = controller.onSubmit(request)
       status(eventualResult) mustBe 303
       redirectLocation(eventualResult) mustBe Some(routes.GoodsDestinationController.onPageLoad().url)
     }
 
-    "return 400 with any form errors" in {
+    "return 400 with required form error" in {
       givenTheUserIsAuthenticatedAndAuthorised()
       val request = buildGet(routes.ImportExportChoiceController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "in valid")
+        .withFormUrlEncodedBody("value" -> "")
 
       val eventualResult = controller.onSubmit(request)
       val result = contentAsString(eventualResult)
@@ -65,6 +67,7 @@ class ImportExportChoiceControllerSpec extends DeclarationJourneyControllerSpec 
       result must include(messageApi("error.summary.title"))
       result must include(messageApi("declarationType.header"))
       result must include(messageApi("declarationType.title"))
+      result must include(messageApi("declarationType.error.required"))
     }
   }
 }

@@ -29,23 +29,21 @@ class GoodsRemovedControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => GoodsRemovedController =
     declarationJourney => new GoodsRemovedController(component, stubProvider(declarationJourney), view)
 
-  "onPageLoad" should {
-    "return 200" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val journey = DeclarationJourney(
-        SessionId("123"),
-        DeclarationType.Import,
-        goodsEntries = GoodsEntries(Seq(completedGoodsEntry))
-      )
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val journey = DeclarationJourney(SessionId("123"), importOrExport, goodsEntries = GoodsEntries(Seq(completedGoodsEntry)))
 
-      val request = buildGet(routes.GoodsRemovedController.onPageLoad().url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
+        val request = buildGet(routes.GoodsRemovedController.onPageLoad().url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
 
-      status(eventualResult) mustBe 200
-      contentAsString(eventualResult) must include(messages("goodsRemoved.title"))
-      contentAsString(eventualResult) must include(messages("goodsRemoved.heading"))
-      contentAsString(eventualResult) must include(messages("goodsRemoved.p1"))
-      contentAsString(eventualResult) must include(messages("goodsRemoved.link"))
+        status(eventualResult) mustBe 200
+        contentAsString(eventualResult) must include(messages("goodsRemoved.title"))
+        contentAsString(eventualResult) must include(messages("goodsRemoved.heading"))
+        contentAsString(eventualResult) must include(messages("goodsRemoved.p1"))
+        contentAsString(eventualResult) must include(messages("goodsRemoved.link"))
+      }
     }
   }
 }
