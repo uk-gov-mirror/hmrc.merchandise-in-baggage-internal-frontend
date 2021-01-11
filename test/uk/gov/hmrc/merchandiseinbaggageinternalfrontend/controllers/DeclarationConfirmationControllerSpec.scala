@@ -17,6 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers.{contentAsString, _}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Import
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{AmountInPence, DeclarationJourney, TotalCalculationResult}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -31,32 +32,44 @@ class DeclarationConfirmationControllerSpec extends DeclarationJourneyController
     declarationJourney =>
       new DeclarationConfirmationController(component, stubProvider(declarationJourney), view, mibConnector, stubRepo(declarationJourney))
 
-  "onPageLoad" should {
-    "return 200" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val persistedDeclaration = declaration
-        .copy(
-          maybeTotalCalculationResult =
-            Some(TotalCalculationResult(aPaymentCalculations, AmountInPence(10L), AmountInPence(5), AmountInPence(2), AmountInPence(3)))
-        )
-      MibBackendStub.givenPersistedDeclarationIsFound(persistedDeclaration, persistedDeclaration.declarationId)
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val persistedDeclaration = declaration
+          .copy(
+            maybeTotalCalculationResult =
+              Some(TotalCalculationResult(aPaymentCalculations, AmountInPence(10L), AmountInPence(5), AmountInPence(2), AmountInPence(3))),
+            declarationType = importOrExport
+          )
+        MibBackendStub.givenPersistedDeclarationIsFound(persistedDeclaration, persistedDeclaration.declarationId)
 
-      val request = buildGet(routes.DeclarationConfirmationController.onPageLoad().url, sessionId)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).onPageLoad()(request)
-      val result = contentAsString(eventualResult)
+        val request = buildGet(routes.DeclarationConfirmationController.onPageLoad().url, sessionId)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(completedDeclarationJourney)).onPageLoad()(request)
+        val result = contentAsString(eventualResult)
 
-      status(eventualResult) mustBe 200
-      result must include(messages("declarationConfirmation.title"))
-      result must include(messages("declarationConfirmation.banner.title"))
-      result must include(messages("declarationConfirmation.yourReferenceNumber.label"))
-      result must include(messages("declarationConfirmation.h2.1"))
-      result must include(messages("declarationConfirmation.ul.p"))
-      result must include(messages("declarationConfirmation.ul.1"))
-      result must include(messages("declarationConfirmation.ul.1.strong"))
-      result must include(messages("declarationConfirmation.ul.2"))
-      result must include(messages("declarationConfirmation.Import.ul.3"))
-      result must include(messages("declarationConfirmation.makeAnotherDeclaration"))
-      result must include(messages("declarationConfirmation.printOrSave.label"))
+        status(eventualResult) mustBe 200
+        result must include(messages("declarationConfirmation.title"))
+        result must include(messages("declarationConfirmation.banner.title"))
+        result must include(messages("declarationConfirmation.yourReferenceNumber.label"))
+        result must include(messages("declarationConfirmation.h2.1"))
+        result must include(messages("declarationConfirmation.ul.p"))
+        result must include(messages("declarationConfirmation.ul.2"))
+        result must include(messages(s"declarationConfirmation.$importOrExport.ul.3"))
+        result must include(messages("declarationConfirmation.makeAnotherDeclaration"))
+        result must include(messages("declarationConfirmation.date"))
+        result must include(messages("declarationConfirmation.email").replace(s"{0}", declaration.email.email))
+        result must include(messages("declarationConfirmation.printOrSave.label"))
+
+        if (importOrExport == Import) {
+          result must include(messages("declarationConfirmation.ul.1"))
+          result must include(messages("declarationConfirmation.ul.1.strong"))
+          result must include(messages("declarationConfirmation.amountPaid"))
+          result must include(messages("declarationConfirmation.amountPaid.customsDuty"))
+          result must include(messages("declarationConfirmation.amountPaid.vat"))
+          result must include(messages("declarationConfirmation.amountPaid.totalTax"))
+        }
+      }
     }
   }
 }

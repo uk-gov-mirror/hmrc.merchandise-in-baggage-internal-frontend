@@ -33,54 +33,58 @@ class CustomsAgentControllerSpec extends DeclarationJourneyControllerSpec {
 
   private val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), DeclarationType.Import)
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 with radio buttons on $importOrExport answer" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-      val request = buildGet(routes.CustomsAgentController.onPageLoad.url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
-      val result = contentAsString(eventualResult)
+        val request = buildGet(routes.CustomsAgentController.onPageLoad.url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
+        val result = contentAsString(eventualResult)
 
-      status(eventualResult) mustBe 200
-      result must include(messageApi("customsAgent.title"))
-      result must include(messageApi("customsAgent.heading"))
-      result must include(messageApi("customsAgent.hint"))
+        status(eventualResult) mustBe 200
+        result must include(messageApi("customsAgent.title"))
+        result must include(messageApi("customsAgent.heading"))
+        result must include(messageApi("customsAgent.hint"))
+      }
+
+      s"show required error on form submit without answering for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.CustomsAgentController.onSubmit().url)
+          .withFormUrlEncodedBody("value" -> "")
+
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
+        status(eventualResult) mustBe 400
+        contentAsString(eventualResult) must include(messageApi("customsAgent.error.required"))
+      }
+
+      s"return 400 with any form errors $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.CustomsAgentController.onSubmit().url)
+          .withFormUrlEncodedBody("value" -> "in valid")
+
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
+        val result = contentAsString(eventualResult)
+
+        status(eventualResult) mustBe 400
+        result must include(messageApi("error.summary.title"))
+        result must include(messageApi("customsAgent.title"))
+        result must include(messageApi("customsAgent.heading"))
+      }
     }
   }
 
-  "onSubmit" should {
-    "redirect to next page after successful form submit with Yes" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val request = buildGet(routes.CustomsAgentController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "Yes")
+  forAll(customAgentYesOrNoAnswer) { (yesOrNo, redirectTo) =>
+    "onSubmit" should {
+      s"redirect to $redirectTo on submit if answer is $yesOrNo" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.CustomsAgentController.onSubmit().url)
+          .withFormUrlEncodedBody("value" -> yesOrNo.toString)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.AgentDetailsController.onPageLoad().url)
-    }
-
-    "redirect to next page after successful form submit with No" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val request = buildGet(routes.CustomsAgentController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "No")
-
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.EoriNumberController.onPageLoad().url)
-    }
-
-    "return 400 with any form errors" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      val request = buildGet(routes.CustomsAgentController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "in valid")
-
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
-      val result = contentAsString(eventualResult)
-
-      status(eventualResult) mustBe 400
-      result must include(messageApi("error.summary.title"))
-      result must include(messageApi("customsAgent.title"))
-      result must include(messageApi("customsAgent.heading"))
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
+        status(eventualResult) mustBe 303
+        redirectLocation(eventualResult) mustBe Some(redirectTo)
+      }
     }
   }
 }
