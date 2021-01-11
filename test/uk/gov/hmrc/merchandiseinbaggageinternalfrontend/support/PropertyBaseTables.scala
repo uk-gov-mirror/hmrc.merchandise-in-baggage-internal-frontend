@@ -19,9 +19,10 @@ package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support
 import org.scalatest.prop.{TableFor1, TableFor2}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.routes
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationType, YesNo}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsDestinations.{GreatBritain, NorthernIreland}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.YesNo.{No, Yes}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationType, GoodsDestination, YesNo}
 
 trait PropertyBaseTables extends ScalaCheckPropertyChecks {
 
@@ -37,5 +38,17 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
     ("radio button yes/no", "redirectTo"),
     (Yes, routes.AgentDetailsController.onPageLoad().url),
     (No, routes.EoriNumberController.onPageLoad().url)
+  )
+
+  val exciseAndRestrictedGoodsYesOrNoAnswer: TableFor2[GoodsDestination, String] = Table(
+    ("radio button NorthernIreland/GreatBritain", "redirectTo"),
+    (GreatBritain, routes.ExciseAndRestrictedGoodsController.onPageLoad().url),
+    (NorthernIreland, routes.CannotUseServiceIrelandController.onPageLoad().url)
+  )
+
+  val goodsDestinationAnswer: TableFor2[YesNo, String] = Table(
+    ("radio button yes/no", "redirectTo"),
+    (Yes, routes.CannotUseServiceController.onPageLoad().url),
+    (No, routes.ValueWeightOfGoodsController.onPageLoad().url)
   )
 }

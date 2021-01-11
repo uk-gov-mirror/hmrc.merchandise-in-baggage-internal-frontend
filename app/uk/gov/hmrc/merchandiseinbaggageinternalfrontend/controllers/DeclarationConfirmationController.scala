@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
+import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import reactivemongo.api.commands.UpdateWriteResult
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.connectors.MibConnector
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.repositories.DeclarationJourneyRepository
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.DeclarationConfirmationView
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeclarationConfirmationController @Inject()(
