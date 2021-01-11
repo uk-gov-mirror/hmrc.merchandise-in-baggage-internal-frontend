@@ -17,6 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Import
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -31,53 +32,60 @@ class PurchaseDetailsControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => PurchaseDetailsController = declarationJourney =>
     new PurchaseDetailsController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), importView, exportView)
 
-  private val journey: DeclarationJourney = DeclarationJourney(
-    SessionId("123"),
-    DeclarationType.Import,
-    goodsEntries = GoodsEntries(Seq(GoodsEntry(maybeCategoryQuantityOfGoods = Some(CategoryQuantityOfGoods("clothes", "1")))))
-  )
+  forAll(declarationTypes) { importOrExport =>
+    val journey: DeclarationJourney = DeclarationJourney(
+      SessionId("123"),
+      importOrExport,
+      goodsEntries = GoodsEntries(Seq(GoodsEntry(maybeCategoryQuantityOfGoods = Some(CategoryQuantityOfGoods("clothes", "1"))))))
+    "onPageLoad" should {
+      s"return 200 with radio buttons for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.PurchaseDetailsController.onPageLoad(1).url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(1)(request)
+        val result = contentAsString(eventualResult)
 
-      val request = buildGet(routes.PurchaseDetailsController.onPageLoad(1).url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(1)(request)
-      val result = contentAsString(eventualResult)
-
-      status(eventualResult) mustBe 200
-      result must include(messages("purchaseDetails.title", "clothes"))
-      result must include(messages("purchaseDetails.heading", "clothes"))
-      result must include(messages("purchaseDetails.price.label"))
-      result must include(messages("purchaseDetails.currency.label"))
-    }
-  }
-
-  "onSubmit" should {
-    "redirect to next page after successful form submit" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      givenADeclarationJourneyIsPersisted(journey)
-      val request = buildGet(routes.SearchGoodsCountryController.onSubmit(1).url)
-        .withFormUrlEncodedBody("price" -> "20", "currency" -> "EUR")
-
-      val eventualResult = controller(journey).onSubmit(1)(request)
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.ReviewGoodsController.onPageLoad().url)
+        status(eventualResult) mustBe 200
+        result must include(messages("purchaseDetails.title", "clothes"))
+        result must include(messages("purchaseDetails.heading", "clothes"))
+        result must include(messages("purchaseDetails.price.label"))
+        if (importOrExport == Import) {
+          result must include(messages("purchaseDetails.price.hint"))
+          result must include(messages("purchaseDetails.p.1"))
+          result must include(messages("purchaseDetails.p.2"))
+          result must include(messages("purchaseDetails.p.a.text"))
+          result must include(messages("purchaseDetails.p.a.href"))
+        }
+        result must include(messages("purchaseDetails.currency.label"))
+      }
     }
 
-    "return 400 with any form errors" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      givenADeclarationJourneyIsPersisted(journey)
-      val request = buildGet(routes.SearchGoodsCountryController.onSubmit(1).url)
-        .withFormUrlEncodedBody("abcd" -> "in valid")
+    "onSubmit" should {
+      s"redirect to next page after successful form submit for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        givenADeclarationJourneyIsPersisted(journey)
+        val request = buildGet(routes.SearchGoodsCountryController.onSubmit(1).url)
+          .withFormUrlEncodedBody("price" -> "20", "currency" -> "EUR")
 
-      val eventualResult = controller(journey).onSubmit(1)(request)
-      val result = contentAsString(eventualResult)
+        val eventualResult = controller(journey).onSubmit(1)(request)
+        status(eventualResult) mustBe 303
+        redirectLocation(eventualResult) mustBe Some(routes.ReviewGoodsController.onPageLoad().url)
+      }
 
-      status(eventualResult) mustBe 400
-      result must include(messageApi("error.summary.title"))
-      result must include(messages("purchaseDetails.title", "clothes"))
-      result must include(messages("purchaseDetails.heading", "clothes"))
+      s"return 400 with any form errors for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        givenADeclarationJourneyIsPersisted(journey)
+        val request = buildGet(routes.SearchGoodsCountryController.onSubmit(1).url)
+          .withFormUrlEncodedBody("abcd" -> "in valid")
+
+        val eventualResult = controller(journey).onSubmit(1)(request)
+        val result = contentAsString(eventualResult)
+
+        status(eventualResult) mustBe 400
+        result must include(messageApi("error.summary.title"))
+        result must include(messages("purchaseDetails.title", "clothes"))
+        result must include(messages("purchaseDetails.heading", "clothes"))
+      }
     }
   }
 }

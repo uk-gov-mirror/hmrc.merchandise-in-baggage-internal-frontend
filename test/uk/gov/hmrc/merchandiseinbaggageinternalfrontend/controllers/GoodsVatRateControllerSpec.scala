@@ -17,7 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
-
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.Export
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{CategoryQuantityOfGoods, DeclarationJourney, DeclarationType, GoodsEntries, GoodsEntry, SessionId}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -52,6 +52,16 @@ class GoodsVatRateControllerSpec extends DeclarationJourneyControllerSpec {
       result must include(messages("goodsVatRate.Zero"))
       result must include(messages("goodsVatRate.Five"))
       result must include(messages("goodsVatRate.Twenty"))
+    }
+
+    s"return 303 redirect to ${routes.SearchGoodsCountryController.onPageLoad(1).url}" in {
+      givenTheUserIsAuthenticatedAndAuthorised()
+
+      val request = buildGet(routes.GoodsVatRateController.onPageLoad(1).url)
+      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey.copy(declarationType = Export))).onPageLoad(1)(request)
+
+      status(eventualResult) mustBe 303
+      redirectLocation(eventualResult).get must endWith(routes.SearchGoodsCountryController.onPageLoad(1).url)
     }
   }
 

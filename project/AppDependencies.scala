@@ -6,15 +6,17 @@ import sbt._
 object AppDependencies {
 
   val compile = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-frontend-play-27" % "3.0.0",
-    "uk.gov.hmrc"             %% "play-frontend-hmrc"         % "0.31.0-play-27",
-    "uk.gov.hmrc"             %% "play-frontend-govuk"        % "0.54.0-play-27",
-    "uk.gov.hmrc"             %% "simple-reactivemongo"       % "7.30.0-play-27",
-    "com.beachape"            %% "enumeratum-play"            % "1.5.13",
-    "org.typelevel"           %% "cats-core"                  % "2.0.0",
-    "com.github.pureconfig"   %% "pureconfig"                 % "0.13.0",
-    "uk.gov.hmrc"             %% "play-language"              % "4.4.0-play-27",
-    "org.webjars.npm"         %  "accessible-autocomplete"    % "2.0.3"
+    "uk.gov.hmrc"                %% "bootstrap-frontend-play-27" % "3.0.0",
+    "uk.gov.hmrc"                %% "play-frontend-hmrc"         % "0.31.0-play-27",
+    "uk.gov.hmrc"                %% "play-frontend-govuk"        % "0.54.0-play-27",
+    "uk.gov.hmrc"                %% "simple-reactivemongo"       % "7.30.0-play-27",
+    "com.beachape"               %% "enumeratum-play"            % "1.5.13",
+    "org.typelevel"              %% "cats-core"                  % "2.0.0",
+    "com.github.pureconfig"      %% "pureconfig"                 % "0.13.0",
+    "uk.gov.hmrc"                %% "play-language"              % "4.4.0-play-27",
+    "org.webjars.npm"            %  "accessible-autocomplete"    % "2.0.3",
+    "com.softwaremill.quicklens" %% "quicklens" % "1.6.1"
+
   )
 
   val test = Seq(

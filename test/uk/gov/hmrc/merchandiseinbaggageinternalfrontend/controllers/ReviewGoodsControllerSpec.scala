@@ -17,6 +17,7 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import play.api.test.Helpers._
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support._
@@ -30,62 +31,51 @@ class ReviewGoodsControllerSpec extends DeclarationJourneyControllerSpec {
   val controller: DeclarationJourney => ReviewGoodsController =
     declarationJourney => new ReviewGoodsController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), view)
 
-  private val journey: DeclarationJourney = DeclarationJourney(
-    SessionId("123"),
-    DeclarationType.Import,
-    goodsEntries = GoodsEntries(Seq(completedGoodsEntry))
-  )
+  forAll(declarationTypes) { importOrExport =>
+    val journey: DeclarationJourney =
+      DeclarationJourney(SessionId("123"), importOrExport, goodsEntries = GoodsEntries(Seq(completedGoodsEntry)))
+    "onPageLoad" should {
+      s"return 200 with radio buttons for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.ReviewGoodsController.onPageLoad.url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
+        val result = contentAsString(eventualResult)
 
-      val request = buildGet(routes.ReviewGoodsController.onPageLoad.url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad(request)
-      val result = contentAsString(eventualResult)
-
-      status(eventualResult) mustBe 200
-      result must include(messageApi("reviewGoods.title"))
-      result must include(messageApi("reviewGoods.heading"))
-      result must include(messageApi("reviewGoods.list.item"))
-      result must include(messageApi("reviewGoods.list.quantity"))
-      result must include(messageApi("reviewGoods.list.vatRate"))
-      result must include(messageApi("reviewGoods.list.country"))
-      result must include(messageApi("reviewGoods.list.price"))
-
-      result must include(messageApi("site.change"))
-      result must include(messageApi("site.remove"))
-
-      result must include(messageApi("reviewGoods.h3"))
-    }
-  }
-
-  "onSubmit" should {
-    "redirect to next page after successful form submit with Yes" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-
-      val request = buildGet(routes.ReviewGoodsController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "Yes")
-
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
-
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.GoodsTypeQuantityController.onPageLoad(2).url)
+        status(eventualResult) mustBe 200
+        result must include(messageApi("reviewGoods.title"))
+        result must include(messageApi("reviewGoods.heading"))
+        result must include(messageApi("reviewGoods.list.item"))
+        result must include(messageApi("reviewGoods.list.quantity"))
+        if (importOrExport == Import) {
+          result must include(messageApi("reviewGoods.list.vatRate"))
+          result must include(messageApi("reviewGoods.list.country"))
+        }
+        if (importOrExport == Export) { result must include(messageApi("reviewGoods.list.destination")) }
+        result must include(messageApi("reviewGoods.list.price"))
+        result must include(messageApi("site.change"))
+        result must include(messageApi("site.remove"))
+        result must include(messageApi("reviewGoods.h3"))
+      }
     }
 
-    "redirect to next page after successful form submit with No" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+    forAll(reviewGoodsAnswer) { (yesOrNo, redirectTo) =>
+      "onSubmit" should {
+        s"redirect to next page after successful form submit with $yesOrNo for $importOrExport" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
 
-      val request = buildGet(routes.ReviewGoodsController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "No")
+          val request = buildGet(routes.ReviewGoodsController.onSubmit().url)
+            .withFormUrlEncodedBody("value" -> yesOrNo.toString)
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
 
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.PaymentCalculationController.onPageLoad().url)
+          status(eventualResult) mustBe 303
+          redirectLocation(eventualResult).get must include(s"$redirectTo")
+        }
+      }
     }
 
-    "return 400 with any form errors" in {
+    s"return 400 with any form errors for $importOrExport" in {
       givenTheUserIsAuthenticatedAndAuthorised()
 
       val request = buildGet(routes.ReviewGoodsController.onSubmit().url)

@@ -17,10 +17,13 @@
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.mvc._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.DeclarationJourneyController.{goodsDeclarationIncompleteMessage, goodsDestinationUnansweredMessage}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.{DeclarationGoods, GoodsDestination, PaymentCalculations}
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.currencyconversion.ConversionRatePeriod
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.service.CalculationService
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.views.html.PaymentCalculationView
 
@@ -47,28 +50,32 @@ class PaymentCalculationController @Inject()(
         request.declarationJourney.maybeGoodsDestination
           .fold(actionProvider.invalidRequestF(goodsDestinationUnansweredMessage)) { destination =>
             request.declarationJourney.declarationType match {
-              case Import =>
-                for {
-                  paymentCalculations <- calculationService.paymentCalculation(goods)
-                  rates               <- calculationService.getConversionRates(goods)
-                } yield {
-                  if (paymentCalculations.totalGbpValue.value > destination.threshold.value)
-                    Redirect(routes.GoodsOverThresholdController.onPageLoad())
-                  else
-                    Ok(
-                      view(
-                        paymentCalculations,
-                        rates,
-                        checkYourAnswersIfComplete(routes.CustomsAgentController.onPageLoad()),
-                        backButtonUrl))
-                }
-              case Export =>
-                if (goods.goods.map(_.purchaseDetails.numericAmount).sum > destination.threshold.inPounds)
-                  Future successful Redirect(routes.GoodsOverThresholdController.onPageLoad())
-                else
-                  Future successful Redirect(routes.CustomsAgentController.onPageLoad())
+              case Import => handleImport(goods, destination)
+              case Export => handleExport(goods, destination)
             }
           }
       }
   }
+
+  private def handleImport(goods: DeclarationGoods, destination: GoodsDestination)(
+    implicit hc: HeaderCarrier,
+    req: DeclarationJourneyRequest[_]): Future[Result] =
+    for {
+      paymentCalculations <- calculationService.paymentCalculation(goods)
+      rates               <- calculationService.getConversionRates(goods)
+    } yield redirectImport(destination, paymentCalculations, rates)
+
+  private def handleExport(goods: DeclarationGoods, destination: GoodsDestination): Future[Result] =
+    if (goods.goods.map(_.purchaseDetails.numericAmount).sum > destination.threshold.inPounds)
+      Future successful Redirect(routes.GoodsOverThresholdController.onPageLoad())
+    else
+      Future successful Redirect(routes.CustomsAgentController.onPageLoad())
+
+  private def redirectImport(destination: GoodsDestination, paymentCalculations: PaymentCalculations, rates: Seq[ConversionRatePeriod])(
+    implicit hc: HeaderCarrier,
+    req: DeclarationJourneyRequest[_]): Result =
+    if (paymentCalculations.totalGbpValue.value > destination.threshold.value)
+      Redirect(routes.GoodsOverThresholdController.onPageLoad())
+    else
+      Ok(view(paymentCalculations, rates, checkYourAnswersIfComplete(routes.CustomsAgentController.onPageLoad()), backButtonUrl))
 }

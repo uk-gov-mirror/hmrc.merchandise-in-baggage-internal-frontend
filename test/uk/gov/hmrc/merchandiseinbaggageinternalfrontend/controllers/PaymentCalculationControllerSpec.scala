@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers
 
+import com.softwaremill.quicklens._
 import play.api.test.Helpers._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support.CurrencyConversionSupport.givenSuccessfulCurrencyConversionResponse
@@ -57,6 +58,28 @@ class PaymentCalculationControllerSpec extends DeclarationJourneyControllerSpec 
       result must include(messages("paymentCalculation.table.col5.head"))
       result must include(messages("paymentCalculation.table.total"))
       result must include(messages("paymentCalculation.h3"))
+    }
+
+    forAll(declarationTypes) { importOrExport =>
+      forAll(paymentCalculationThreshold) { (thresholdValue, redirectTo) =>
+        s"redirect to $redirectTo for $importOrExport if threshold is $thresholdValue" in {
+          givenTheUserIsAuthenticatedAndAuthorised()
+          givenSuccessfulCurrencyConversionResponse()
+
+          val journey = DeclarationJourney(
+            SessionId("123"),
+            DeclarationType.Export,
+            maybeGoodsDestination = Some(GoodsDestinations.GreatBritain),
+            goodsEntries = GoodsEntries(Seq(completedGoodsEntry.modify(_.maybePurchaseDetails.each.amount).setTo(thresholdValue)))
+          )
+
+          val request = buildGet(routes.PaymentCalculationController.onPageLoad().url)
+          val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
+
+          status(eventualResult) mustBe 303
+          redirectLocation(eventualResult).get must endWith(redirectTo)
+        }
+      }
     }
   }
 }

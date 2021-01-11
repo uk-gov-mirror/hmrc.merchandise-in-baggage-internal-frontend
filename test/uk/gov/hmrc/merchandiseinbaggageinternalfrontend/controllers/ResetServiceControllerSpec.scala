@@ -27,21 +27,23 @@ class ResetServiceControllerSpec extends DeclarationJourneyControllerSpec {
 
   val controller = new ResetServiceController(component, actionProvider, repo)
 
-  "onPageLoad" should {
-    "return 200 with expected content" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-      repo.insert(startedImportToGreatBritainJourney)
+  forAll(declarationTypes) { importOrExport =>
+    "onPageLoad" should {
+      s"return 200 with expected content for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        repo.insert(startedImportToGreatBritainJourney.copy(declarationType = importOrExport)).futureValue
 
-      val request = buildGet(routes.ResetServiceController.onPageLoad().url, sessionId)
+        val request = buildGet(routes.ResetServiceController.onPageLoad().url, sessionId)
 
-      repo.findBySessionId(sessionId).futureValue.get.maybeGoodsDestination mustBe Some(GreatBritain)
+        repo.findBySessionId(sessionId).futureValue.get.maybeGoodsDestination mustBe Some(GreatBritain)
 
-      val eventualResult = controller.onPageLoad(request)
+        val eventualResult = controller.onPageLoad(request)
 
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.ImportExportChoiceController.onPageLoad().url)
+        status(eventualResult) mustBe 303
+        redirectLocation(eventualResult) mustBe Some(routes.ImportExportChoiceController.onPageLoad().url)
 
-      repo.findBySessionId(sessionId).futureValue.get.maybeGoodsDestination mustBe None
+        repo.findBySessionId(sessionId).futureValue.get.maybeGoodsDestination mustBe None
+      }
     }
   }
 
