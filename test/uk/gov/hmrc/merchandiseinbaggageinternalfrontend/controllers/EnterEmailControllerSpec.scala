@@ -46,7 +46,6 @@ class EnterEmailControllerSpec extends DeclarationJourneyControllerSpec {
         result must include(messageApi("enterEmail.heading"))
         result must include(messageApi("enterEmail.hint"))
         result must include(messageApi("enterEmail.email"))
-        result must include(messageApi("enterEmail.confirmation"))
       }
     }
 
@@ -54,7 +53,7 @@ class EnterEmailControllerSpec extends DeclarationJourneyControllerSpec {
       s"redirect to next page after successful form submit for $importOrExport" in {
         givenTheUserIsAuthenticatedAndAuthorised()
         val request = buildGet(routes.EnterEmailController.onSubmit().url)
-          .withFormUrlEncodedBody("email" -> "s@s.s", "confirmation" -> "s@s.s")
+          .withFormUrlEncodedBody("email" -> "s@s.s")
 
         val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
         status(eventualResult) mustBe 303
@@ -64,7 +63,7 @@ class EnterEmailControllerSpec extends DeclarationJourneyControllerSpec {
       s"return 400 with any form errors for $importOrExport" in {
         givenTheUserIsAuthenticatedAndAuthorised()
         val request = buildGet(routes.EnterEmailController.onSubmit().url)
-          .withFormUrlEncodedBody("email1" -> "s@s.s", "confirmation" -> "")
+          .withFormUrlEncodedBody("email1" -> "")
 
         val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit(request)
         val result = contentAsString(eventualResult)
@@ -74,7 +73,6 @@ class EnterEmailControllerSpec extends DeclarationJourneyControllerSpec {
         result must include(messageApi("enterEmail.heading"))
         result must include(messageApi("enterEmail.hint"))
         result must include(messageApi("enterEmail.email"))
-        result must include(messageApi("enterEmail.confirmation"))
       }
     }
   }
