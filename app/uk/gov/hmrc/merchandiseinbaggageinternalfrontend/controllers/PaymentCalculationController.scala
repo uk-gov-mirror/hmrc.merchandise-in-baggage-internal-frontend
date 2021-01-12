@@ -72,8 +72,7 @@ class PaymentCalculationController @Inject()(
       Future successful Redirect(routes.CustomsAgentController.onPageLoad())
 
   private def redirectImport(destination: GoodsDestination, paymentCalculations: PaymentCalculations, rates: Seq[ConversionRatePeriod])(
-    implicit hc: HeaderCarrier,
-    req: DeclarationJourneyRequest[_]): Result =
+    implicit req: DeclarationJourneyRequest[_]): Result =
     if (paymentCalculations.totalGbpValue.value > destination.threshold.value)
       Redirect(routes.GoodsOverThresholdController.onPageLoad())
     else

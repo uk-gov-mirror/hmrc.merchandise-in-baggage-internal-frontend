@@ -32,48 +32,48 @@ class VehicleRegistrationNumberControllerSpec extends DeclarationJourneyControll
     declarationJourney =>
       new VehicleRegistrationNumberController(component, stubProvider(declarationJourney), stubRepo(declarationJourney), view)
 
-  private val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), DeclarationType.Import)
+  forAll(declarationTypes) { importOrExport =>
+    val journey: DeclarationJourney = DeclarationJourney(SessionId("123"), importOrExport)
+    "onPageLoad" should {
+      s"return 200 with radio buttons for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-  "onPageLoad" should {
-    "return 200 with radio buttons" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.VehicleRegistrationNumberController.onPageLoad().url)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
 
-      val request = buildGet(routes.VehicleRegistrationNumberController.onPageLoad().url)
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onPageLoad()(request)
-
-      status(eventualResult) mustBe 200
-      contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.title"))
-      contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.heading"))
-      contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.hint"))
-    }
-  }
-
-  "onSubmit" should {
-    "redirect to next page after successful form submit" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
-
-      val request = buildGet(routes.VehicleRegistrationNumberController.onSubmit().url)
-        .withFormUrlEncodedBody("value" -> "business-name")
-
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
-
-      status(eventualResult) mustBe 303
-      redirectLocation(eventualResult) mustBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+        status(eventualResult) mustBe 200
+        contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.title"))
+        contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.heading"))
+        contentAsString(eventualResult) must include(messages("vehicleRegistrationNumber.hint"))
+      }
     }
 
-    "return 400 with any form errors" in {
-      givenTheUserIsAuthenticatedAndAuthorised()
+    "onSubmit" should {
+      s"redirect to next page after successful form submit for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-      val request = buildGet(routes.VehicleRegistrationNumberController.onSubmit().url)
-        .withFormUrlEncodedBody("value123" -> "in valid")
+        val request = buildGet(routes.VehicleRegistrationNumberController.onSubmit().url)
+          .withFormUrlEncodedBody("value" -> "business-name")
 
-      val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
-      val result = contentAsString(eventualResult)
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
 
-      status(eventualResult) mustBe 400
-      result must include(messageApi("error.summary.title"))
-      result must include(messages("vehicleRegistrationNumber.title"))
-      result must include(messages("vehicleRegistrationNumber.heading"))
+        status(eventualResult) mustBe 303
+        redirectLocation(eventualResult) mustBe Some(routes.CheckYourAnswersController.onPageLoad().url)
+      }
+
+      s"return 400 with required form error for $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+
+        val request = buildGet(routes.VehicleRegistrationNumberController.onSubmit().url)
+          .withFormUrlEncodedBody("value123" -> "")
+
+        val eventualResult = controller(givenADeclarationJourneyIsPersisted(journey)).onSubmit()(request)
+        val result = contentAsString(eventualResult)
+
+        status(eventualResult) mustBe 400
+        result must include(messageApi("error.summary.title"))
+        result must include(messages("vehicleRegistrationNumber.error.required"))
+      }
     }
   }
 }

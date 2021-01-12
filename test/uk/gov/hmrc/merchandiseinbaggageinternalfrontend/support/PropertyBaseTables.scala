@@ -28,6 +28,8 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
 
   val declarationTypes: TableFor1[DeclarationType] = Table("declarationType", Import, Export)
 
+  val destinations: TableFor1[GoodsDestination] = Table("destination", GreatBritain, NorthernIreland)
+
   val traderYesOrNoAnswer = Table(
     ("answer", "trader or agent"),
     (Yes, "agent"),
@@ -62,6 +64,18 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
     ("radio button yes/no", "redirectTo"),
     (Yes, routes.GoodsRemovedController.onPageLoad().url),
     (No, routes.ReviewGoodsController.onPageLoad().url)
+  )
+
+  val valueOfWeighOfGoodsAnswer: TableFor2[YesNo, String] = Table(
+    ("radio button yes/no", "redirectTo"),
+    (Yes, routes.CannotUseServiceController.onPageLoad().url),
+    (No, routes.GoodsTypeQuantityController.onPageLoad(1).url)
+  )
+
+  val vehicleRegistrationNumberAnswer: TableFor2[YesNo, String] = Table(
+    ("radio button yes/no", "redirectTo"),
+    (Yes, routes.VehicleRegistrationNumberController.onPageLoad().url),
+    (No, routes.CannotUseServiceController.onPageLoad().url)
   )
 
   val reviewGoodsAnswer: TableFor2[YesNo, String] = Table(
