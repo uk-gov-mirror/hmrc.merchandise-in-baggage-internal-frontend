@@ -18,7 +18,8 @@ package uk.gov.hmrc.merchandiseinbaggageinternalfrontend.support
 
 import org.scalatest.prop.{TableFor1, TableFor2}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.routes
+import play.api.mvc.Call
+import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.controllers.routes._
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.GoodsDestinations.{GreatBritain, NorthernIreland}
 import uk.gov.hmrc.merchandiseinbaggageinternalfrontend.model.core.YesNo.{No, Yes}
@@ -36,57 +37,58 @@ trait PropertyBaseTables extends ScalaCheckPropertyChecks {
     (No, "trader")
   )
 
-  val customAgentYesOrNoAnswer: TableFor2[YesNo, String] = Table(
-    ("radio button yes/no", "redirectTo"),
-    (Yes, routes.AgentDetailsController.onPageLoad().url),
-    (No, routes.EoriNumberController.onPageLoad().url)
-  )
-
   val goodsDestinationAnswer: TableFor2[GoodsDestination, String] = Table(
     ("radio button NorthernIreland/GreatBritain", "redirectTo"),
-    (GreatBritain, routes.ExciseAndRestrictedGoodsController.onPageLoad().url),
-    (NorthernIreland, routes.CannotUseServiceIrelandController.onPageLoad().url)
-  )
-
-  val exciseAndRestrictedGoodsYesOrNoAnswer: TableFor2[YesNo, String] = Table(
-    ("radio button yes/no", "redirectTo"),
-    (Yes, routes.CannotUseServiceController.onPageLoad().url),
-    (No, routes.ValueWeightOfGoodsController.onPageLoad().url)
-  )
-
-  val goodsInVehicleAnswer: TableFor2[YesNo, String] = Table(
-    ("radio button yes/no", "redirectTo"),
-    (Yes, routes.VehicleSizeController.onPageLoad().url),
-    (No, routes.CheckYourAnswersController.onPageLoad().url)
-  )
-
-  val removeGoodsAnswer: TableFor2[YesNo, String] = Table(
-    ("radio button yes/no", "redirectTo"),
-    (Yes, routes.GoodsRemovedController.onPageLoad().url),
-    (No, routes.ReviewGoodsController.onPageLoad().url)
+    (GreatBritain, ExciseAndRestrictedGoodsController.onPageLoad().url),
+    (NorthernIreland, CannotUseServiceIrelandController.onPageLoad().url)
   )
 
   val valueOfWeighOfGoodsAnswer: TableFor2[YesNo, String] = Table(
     ("radio button yes/no", "redirectTo"),
-    (Yes, routes.CannotUseServiceController.onPageLoad().url),
-    (No, routes.GoodsTypeQuantityController.onPageLoad(1).url)
+    (Yes, CannotUseServiceController.onPageLoad().url),
+    (No, GoodsTypeQuantityController.onPageLoad(1).url)
   )
 
-  val vehicleRegistrationNumberAnswer: TableFor2[YesNo, String] = Table(
-    ("radio button yes/no", "redirectTo"),
-    (Yes, routes.VehicleRegistrationNumberController.onPageLoad().url),
-    (No, routes.CannotUseServiceController.onPageLoad().url)
+  val customAgentYesOrNoAnswer: TableFor2[YesNo, String] = yesOrNoTable(
+    AgentDetailsController.onPageLoad(),
+    EoriNumberController.onPageLoad()
+  )
+
+  val vehicleRegistrationNumberAnswer: TableFor2[YesNo, String] = yesOrNoTable(
+    VehicleRegistrationNumberController.onPageLoad(),
+    CannotUseServiceController.onPageLoad()
   )
 
   val reviewGoodsAnswer: TableFor2[YesNo, String] = Table(
     ("radio button yes/no", "redirectTo"),
-    (Yes, routes.GoodsTypeQuantityController.onPageLoad(2).url),
-    (No, routes.PaymentCalculationController.onPageLoad().url)
+    (Yes, GoodsTypeQuantityController.onPageLoad(2).url),
+    (No, PaymentCalculationController.onPageLoad().url)
   )
 
   val paymentCalculationThreshold: TableFor2[String, String] = Table(
     ("threshold", "redirectTo"),
-    ("150001", routes.GoodsOverThresholdController.onPageLoad().url),
-    ("99.99", routes.CustomsAgentController.onPageLoad().url)
+    ("150001", GoodsOverThresholdController.onPageLoad().url),
+    ("99.99", CustomsAgentController.onPageLoad().url)
+  )
+
+  val exciseAndRestrictedGoodsYesOrNoAnswer: TableFor2[YesNo, String] = yesOrNoTable(
+    CannotUseServiceController.onPageLoad(),
+    ValueWeightOfGoodsController.onPageLoad()
+  )
+
+  val goodsInVehicleAnswer: TableFor2[YesNo, String] = yesOrNoTable(
+    VehicleSizeController.onPageLoad(),
+    CheckYourAnswersController.onPageLoad()
+  )
+
+  val removeGoodsAnswer: TableFor2[YesNo, String] = yesOrNoTable(
+    GoodsRemovedController.onPageLoad(),
+    ReviewGoodsController.onPageLoad()
+  )
+
+  private def yesOrNoTable(yesUrl: Call, noUrl: Call): TableFor2[YesNo, String] = Table(
+    ("radio button yes/no", "redirectTo"),
+    (Yes, yesUrl.url),
+    (No, noUrl.url)
   )
 }
