@@ -43,25 +43,34 @@ object MockStrideAuth {
           .withStatus(200)
           .withBody(s"""
                        |{
-                       |  "optionalCredentials":{
-                       |    "providerId": "userId",
-                       |    "providerType": "PrivilegedApplication"
+                       | "optionalCredentials": {
+                       |  "providerId": "userId",
+                       |  "providerType": "PrivilegedApplication"
+                       | },
+                       | "allEnrolments": [
+                       |  {
+                       |   "key": "digital_tps_payment_taker_call_handler",
+                       |   "identifiers": [
+                       |    {
+                       |     "key": "digital_tps_payment_taker_call_handler",
+                       |     "value": "digital_tps_payment_taker_call_handler"
+                       |    }
+                       |   ],
+                       |   "state": "Activated"
+                       |  },
+                       |  {
+                       |   "key": "digital_mib_call_handler",
+                       |   "identifiers": [
+                       |    {
+                       |     "key": "digital_mib_call_handler",
+                       |     "value": "digital_mib_call_handler"
+                       |    }
+                       |   ],
+                       |   "state": "Activated"
                        |  }
+                       | ]
                        |}
        """.stripMargin)))
-
-  def givenTheUserHasNoCredentials(): StubMapping =
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .withRequestBody(
-          equalToJson(
-            authRequestBody,
-            true,
-            true
-          ))
-        .willReturn(aResponse()
-          .withStatus(200)
-          .withBody("{}")))
 
   def givenAuthFailsWith(error: String): StubMapping =
     stubFor(
@@ -76,15 +85,11 @@ object MockStrideAuth {
        |{
        |  "authorise": [
        |    {
-       |     "identifiers":[],
-       |     "state":"Activated",
-       |     "enrolment":"digital_tps_payment_taker_call_handler"
-       |    },
-       |    {
        |      "authProviders": [
        |        "PrivilegedApplication"
        |      ]
        |    }
-       |  ]
+       |  ],
+       |  "retrieve" : [ "optionalCredentials", "allEnrolments" ]
        |}""".stripMargin
 }
