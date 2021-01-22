@@ -91,6 +91,19 @@ class CheckYourAnswersControllerSpec extends DeclarationJourneyControllerSpec {
           result must include(messages("checkYourAnswers.journeyDetails.dateOfDeparture"))
         }
       }
+
+      s"return 200 for type $importOrExport when email is None" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        givenSuccessfulCurrencyConversionResponse()
+
+        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, sessionId)
+
+        val eventualResult = controller(
+          givenADeclarationJourneyIsPersisted(completedDeclarationJourney
+            .copy(declarationType = importOrExport, maybeEmailAddress = None))).onPageLoad()(request)
+
+        status(eventualResult) mustBe 200
+      }
     }
   }
 

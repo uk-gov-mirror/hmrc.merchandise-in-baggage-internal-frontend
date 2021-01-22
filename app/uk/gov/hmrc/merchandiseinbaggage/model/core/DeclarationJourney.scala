@@ -141,7 +141,6 @@ case class DeclarationJourney(
       goodsDestination             <- maybeGoodsDestination
       goods                        <- goodsEntries.declarationGoodsIfComplete
       nameOfPersonCarryingTheGoods <- maybeNameOfPersonCarryingTheGoods
-      email                        <- maybeEmailAddress
       eori                         <- maybeEori
       journeyDetails               <- maybeCompleteJourneyDetails
       if discardedAnswersAreCompleteAndRequireADeclaration
@@ -153,7 +152,7 @@ case class DeclarationJourney(
         goodsDestination,
         goods,
         nameOfPersonCarryingTheGoods,
-        Some(email),
+        maybeEmailAddress,
         maybeCustomsAgent,
         eori,
         journeyDetails,
