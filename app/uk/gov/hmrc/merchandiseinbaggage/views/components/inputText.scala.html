@@ -20,6 +20,7 @@
         form: Form[_],
         id: String,
         name: String,
+        inputType: String = "text",
         label: String,
         isPageHeading: Boolean,
         headingMessageArgs: Seq[String] = Seq(),
@@ -42,5 +43,6 @@
         content = HtmlContent(messages(hintKey))
     )),
     value = form(name).value,
+    inputType = inputType,
     errorMessage = form(name).error.map(err => ErrorMessage(content = Text(messages(err.message, err.args:_*))))
 ))
