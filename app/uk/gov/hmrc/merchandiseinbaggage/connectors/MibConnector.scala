@@ -49,11 +49,6 @@ class MibConnector @Inject()(httpClient: HttpClient, @Named("mibBackendBaseUrl")
     calculationRequest: CalculationRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CalculationResult] =
     httpClient.POST[CalculationRequest, CalculationResult](s"$base$calculationUrl", calculationRequest)
 
-  def sendEmails(declarationId: DeclarationId)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    httpClient
-      .POST[String, HttpResponse](s"$base$sendEmailsUrl/${declarationId.value}", "")
-      .map(_ => ())
-
   def checkEoriNumber(eori: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CheckResponse] =
     httpClient.GET[CheckResponse](s"$base$checkEoriUrl$eori")
 }

@@ -53,12 +53,6 @@ class MibConnectorSpec extends BaseSpecWithApplication with CoreTestData with Wi
     client.findDeclaration(stubbedDeclarationId).futureValue mustBe Some(declarationWithId)
   }
 
-  "sendEmails should return as expected" in {
-    givenSendEmailsSuccess(stubbedDeclarationId)
-
-    client.sendEmails(stubbedDeclarationId).futureValue mustBe (())
-  }
-
   "check eori number" in {
     givenEoriIsChecked(aEoriNumber)
 
