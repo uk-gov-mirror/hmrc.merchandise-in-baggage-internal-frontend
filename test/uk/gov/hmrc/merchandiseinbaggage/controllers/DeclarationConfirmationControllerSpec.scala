@@ -92,4 +92,11 @@ class DeclarationConfirmationControllerSpec extends DeclarationJourneyController
     result mustNot include(messageApi("declarationConfirmation.ul.3"))
   }
 
+  "Import should display the destination country" in {
+    val result = generateDeclarationConfirmationPage(DeclarationType.Export, 100)
+
+    result must include("Destination")
+    result must include("France")
+  }
+
 }

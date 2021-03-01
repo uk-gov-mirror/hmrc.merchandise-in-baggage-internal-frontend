@@ -223,6 +223,12 @@ trait CoreTestData {
         dummyAmount
       )
 
+    val exportItem = ExportGoods(
+      CategoryQuantityOfGoods("test good", "123"),
+      Country("FR", "title.france", "FR", true, Nil),
+      PurchaseDetails("99.99", Currency("GBP", "title.british_pounds_gbp", Some("GBP"), Nil))
+    )
+
     val sessionId = SessionId()
     val id = DeclarationId("456")
     val created = LocalDateTime.now.withSecond(0).withNano(0)
@@ -232,7 +238,7 @@ trait CoreTestData {
 
     val persistedDeclaration = journey.declarationIfRequiredAndComplete.map { declaration =>
       if (decType == DeclarationType.Import) declaration.copy(maybeTotalCalculationResult = Some(totalCalculationResult))
-      else declaration
+      else declaration.copy(declarationGoods = DeclarationGoods(Seq(exportItem)))
     }
 
     val declarationConfirmationView = new DeclarationConfirmationView(layout, null, link)
