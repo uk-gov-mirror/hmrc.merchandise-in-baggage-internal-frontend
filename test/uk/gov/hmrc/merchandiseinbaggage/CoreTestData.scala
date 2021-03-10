@@ -34,9 +34,15 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.merchandiseinbaggage.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggage.views.html.{DeclarationConfirmationView, Layout}
 
+import java.util.UUID
+
 trait CoreTestData {
 
   val aSessionId: SessionId = SessionId()
+
+  val mibReference = MibReference("XAMB0000010000")
+  val eori = Eori("GB123456780000")
+  val aDeclarationId = DeclarationId(UUID.randomUUID().toString)
 
   val startedImportJourney: DeclarationJourney = DeclarationJourney(aSessionId, Import)
 
