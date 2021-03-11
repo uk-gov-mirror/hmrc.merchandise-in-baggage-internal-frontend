@@ -32,6 +32,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.CSRFTokenHelper.CSRFFRequestHeader
 import play.api.test.FakeRequest
 import uk.gov.hmrc.merchandiseinbaggage.config.AppConfig
+import uk.gov.hmrc.merchandiseinbaggage.model.api.GoodsVatRates.Twenty
 import uk.gov.hmrc.merchandiseinbaggage.views.html.{DeclarationConfirmationView, Layout}
 
 import java.util.UUID
@@ -145,6 +146,7 @@ trait CoreTestData {
 
   val aPurchaseDetails: PurchaseDetails =
     PurchaseDetails("199.99", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European")))
+  val aGoods: ImportGoods = ImportGoods(aCategoryQuantityOfGoods, Twenty, YesNoDontKnow.Yes, aPurchaseDetails)
 
   val aConversionRatePeriod: ConversionRatePeriod = ConversionRatePeriod(journeyDate, journeyDate, "EUR", BigDecimal(1.2))
   val aCalculationResult: CalculationResult =
@@ -182,6 +184,22 @@ trait CoreTestData {
   val aCompanyDetails: CompanyDetails = CompanyDetails("Firstname LastName", aCheckEoriAddress)
 
   val aCheckResponse: CheckResponse = CheckResponse(aEoriNumber, valid = true, Some(aCompanyDetails))
+
+  val aAmendment = Amendment(
+    LocalDateTime.now,
+    DeclarationGoods(aGoods.copy(categoryQuantityOfGoods = CategoryQuantityOfGoods("Amendment", "123")) :: Nil),
+    None,
+    None,
+    Some("Digital")
+  )
+
+  val aAmendmentPaid = aAmendment
+    .modify(_.paymentStatus)
+    .setTo(Some(Paid))
+
+  val aAmendmentNotRequired = aAmendment
+    .modify(_.paymentStatus)
+    .setTo(Some(NotRequired))
 
   def aSuccessCheckResponse(eoriNumber: String = aEoriNumber): String =
     s"""{

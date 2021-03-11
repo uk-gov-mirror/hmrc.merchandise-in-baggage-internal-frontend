@@ -53,6 +53,18 @@ declarationType.Import = Make an import declaration
 declarationType.Export = Make an export declaration
 declarationType.error.required = Select if you want to make an import or export declaration
 
+# PreviousDeclarationDetails
+previousDeclarationDetails.title = Details of your existing declaration
+previousDeclarationDetails.heading = Details of your existing declaration
+previousDeclarationDetails.details = Details of the goods
+previousDeclarationDetails.journey = Journey details
+previousDeclarationDetails.journey.arrival = Place of arrival
+previousDeclarationDetails.journey.date = Date of arrival
+previousDeclarationDetails.add = Add more goods to this declaration
+previousDeclarationDetails.expired = You cannot add to an old declaration.
+previousDeclarationDetails.add_goods = You can only add more goods to this declaration, you cannot change any other details. Make sure the total value of all the goods is less than £1,500 and the weight is less than 1,000kg.
+previousDeclarationDetails.add.button.text = Add more goods
+
 # ExciseAndRestrictedGoods
 exciseAndRestrictedGoods.Import.title = Are you bringing excise, controlled or restricted goods to Great Britain?
 exciseAndRestrictedGoods.Import.heading = Are you bringing excise, controlled or restricted goods to Great Britain?

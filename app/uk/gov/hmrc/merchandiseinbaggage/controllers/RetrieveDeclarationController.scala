@@ -69,9 +69,7 @@ class RetrieveDeclarationController @Inject()(
         error => Future successful InternalServerError(error), {
           case Some(id) =>
             repo.upsert(request.declarationJourney.copy(declarationId = id)) map { _ =>
-              //TODO: redirect to next page when implemented
-              Redirect(routes.InvalidRequestController.onPageLoad())
-//              Redirect(routes.PreviousDeclarationDetailsController.onPageLoad() )
+              Redirect(routes.PreviousDeclarationDetailsController.onPageLoad())
             }
           // TODO url links
           case None => Future successful Redirect(routes.InvalidRequestController.onPageLoad())
