@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.merchandiseinbaggage.connectors
 
+import cats.data.EitherT
 import play.api.Logging
 import play.api.http.Status
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.merchandiseinbaggage.config.MibConfiguration
-import uk.gov.hmrc.merchandiseinbaggage.model.api.Declaration
-import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationId
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{Declaration, DeclarationId, Eori, MibReference}
+
 import javax.inject.{Inject, Named, Singleton}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.calculation.{CalculationRequest, CalculationResult}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.checkeori.CheckResponse
@@ -30,7 +31,8 @@ import uk.gov.hmrc.merchandiseinbaggage.model.api.checkeori.CheckResponse
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MibConnector @Inject()(httpClient: HttpClient, @Named("mibBackendBaseUrl") base: String) extends MibConfiguration with Logging {
+class MibConnector @Inject()(httpClient: HttpClient, @Named("mibBackendBaseUrl") base: String)(implicit ec: ExecutionContext)
+    extends MibConfiguration with Logging {
 
   def persistDeclaration(declaration: Declaration)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[DeclarationId] =
     httpClient.POST[Declaration, DeclarationId](s"$base$declarationsUrl", declaration)
@@ -44,6 +46,21 @@ class MibConnector @Inject()(httpClient: HttpClient, @Named("mibBackendBaseUrl")
           None
       }
     }
+
+  def findBy(mibReference: MibReference, eori: Eori)(
+    implicit ec: ExecutionContext,
+    hc: HeaderCarrier): EitherT[Future, String, Option[DeclarationId]] =
+    EitherT(
+      httpClient.GET[HttpResponse](s"$base$declarationsUrl?mibReference=${mibReference.value}&eori=${eori.value}").map { response =>
+        response.status match {
+          case Status.OK        => Right(Some(DeclarationId((response.json \ "declarationId").as[String])))
+          case Status.NOT_FOUND => Right(None)
+          case other =>
+            logger.warn(s"unexpected status for findBy for mibReference:${mibReference.value}, and eori:${eori.value}, status:$other")
+            Left(s"unexpected status for findBy, status:$other")
+        }
+      }
+    )
 
   def calculatePayments(
     calculationRequests: Seq[CalculationRequest])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[CalculationResult]] =
