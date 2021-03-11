@@ -87,8 +87,7 @@ class RetrieveDeclarationControllerSpec extends DeclarationJourneyControllerSpec
 
       val eventualResult = controller(journey).onSubmit(request)
       status(eventualResult) mustBe 303
-      // TODO when pages are added
-//      redirectLocation(eventualResult) mustBe Some(routes.PreviousDeclarationDetailsController.onPageLoad().url)
+      redirectLocation(eventualResult) mustBe Some(routes.PreviousDeclarationDetailsController.onPageLoad().url)
     }
 
     s"redirect to /declaration-not-found after successful form submit but no declaration found in the BE" in {
