@@ -19,7 +19,7 @@ package uk.gov.hmrc.merchandiseinbaggage.service
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.merchandiseinbaggage.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.Import
-import uk.gov.hmrc.merchandiseinbaggage.model.api.{Amendment, DeclarationId}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{Amendment, AmountInPence, DeclarationId}
 import uk.gov.hmrc.merchandiseinbaggage.stubs.MibBackendStub.givenPersistedDeclarationIsFound
 import uk.gov.hmrc.merchandiseinbaggage.support.{BaseSpecWithApplication, WireMockSupport}
 
@@ -98,7 +98,7 @@ class DeclarationServiceSpec extends BaseSpecWithApplication with WireMockSuppor
       val result = DeclarationService.listGoods(goods, amendments)
 
       result.length mustBe itemCount + 1
-      result.last.categoryQuantityOfGoods.category mustBe "Amendment"
+      result.last.categoryQuantityOfGoods.category mustBe "more cheese"
     }
   }
 
@@ -114,11 +114,12 @@ class DeclarationServiceSpec extends BaseSpecWithApplication with WireMockSuppor
       givenPersistedDeclarationIsFound(declaration, declarationId)
 
       service.findDeclaration(declarationId)(hc, ec).futureValue.map {
-        case (goods, journeyDetails, declarationType, withinDate) =>
+        case (goods, journeyDetails, declarationType, withinDate, totalPaid) =>
           goods.length mustBe (2)
           journeyDetails mustBe (declaration.journeyDetails)
           declarationType mustBe (Import)
           withinDate mustBe (true)
+          totalPaid.value mustBe (0L)
         case err => fail(err.toString())
       }
     }
@@ -133,9 +134,36 @@ class DeclarationServiceSpec extends BaseSpecWithApplication with WireMockSuppor
       givenPersistedDeclarationIsFound(declaration, declarationId)
 
       service.findDeclaration(DeclarationId("987"))(hc, ec).futureValue.map {
-        case (_, _, _, _) =>
+        case (_, _, _, _, _) =>
           fail("Should not be able to find Declaration")
       }
+    }
+  }
+
+  "total payment" should {
+    "match declaration if no amendments" in {
+      val dec = AmountInPence(1000L)
+      val result = DeclarationService.totalPayment(dec, List.empty[Amendment])
+
+      result.value mustBe 1000L
+    }
+
+    "calc payment with declaration and one amendments" in {
+      val dec = AmountInPence(1000L)
+      val amendments = List(aAmendmentPaid)
+      val result = DeclarationService.totalPayment(dec, amendments)
+
+      result.value mustBe 1100L
+    }
+
+    "calc payment with declaration and several amendments" in {
+      val dec = AmountInPence(1000L)
+      val itemCount = 10
+      val amendment = List.fill(itemCount)(aAmendmentPaid)
+
+      val result = DeclarationService.totalPayment(dec, amendment)
+
+      result.value mustBe 2000L
     }
   }
 }
