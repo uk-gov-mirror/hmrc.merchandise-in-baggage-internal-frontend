@@ -178,6 +178,8 @@ trait CoreTestData {
 
   val aCalculationResults = CalculationResults(Seq(aCalculationResult))
 
+  val aTotalCalculationResult =
+    TotalCalculationResult(aCalculationResults, AmountInPence(100), AmountInPence(100), AmountInPence(100), AmountInPence(100))
   val aDeclarationGood: DeclarationGoods = DeclarationGoods(Seq(aImportGoods))
 
   val aEoriNumber: String = "GB025115110987654"
@@ -188,8 +190,8 @@ trait CoreTestData {
 
   val aAmendment = Amendment(
     LocalDateTime.now,
-    DeclarationGoods(aGoods.copy(categoryQuantityOfGoods = CategoryQuantityOfGoods("Amendment", "123")) :: Nil),
-    None,
+    DeclarationGoods(aGoods.copy(categoryQuantityOfGoods = CategoryQuantityOfGoods("more cheese", "123")) :: Nil),
+    Some(TotalCalculationResult(aCalculationResults, AmountInPence(100), AmountInPence(100), AmountInPence(100), AmountInPence(100))),
     None,
     Some("Digital")
   )
