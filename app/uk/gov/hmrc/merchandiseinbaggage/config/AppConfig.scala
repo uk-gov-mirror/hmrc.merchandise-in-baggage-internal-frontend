@@ -41,6 +41,9 @@ class AppConfig @Inject()(val config: Configuration, val env: Environment) exten
 
   lazy val tpsFrontendBaseUrl: String = configSource("microservice.services.tps-payments-frontend.url").loadOrThrow[String]
 
+  lazy val paymentsReturnUrl: String = configSource("payments.returnUrl").loadOrThrow[String]
+  lazy val paymentsBackUrl: String = configSource("payments.backUrl").loadOrThrow[String]
+
   val feedbackUrl: String = {
     val url = configSource("microservice.services.feedback-frontend.url").loadOrThrow[String]
     s"$url/$serviceIdentifier"

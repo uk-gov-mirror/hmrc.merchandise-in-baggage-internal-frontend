@@ -27,10 +27,11 @@ import uk.gov.hmrc.merchandiseinbaggage.controllers.testonly.TestOnlyController
 import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.GoodsDestinations.{GreatBritain, NorthernIreland}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.GoodsVatRates.Twenty
-import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.New
+import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.{Amend, New}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.YesNo.No
 import uk.gov.hmrc.merchandiseinbaggage.model.api.calculation.{CalculationResult, CalculationResults}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.checkeori.{CheckEoriAddress, CheckResponse, CompanyDetails}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.payapi.PayApiRequest
 import uk.gov.hmrc.merchandiseinbaggage.model.api.{Country, _}
 import uk.gov.hmrc.merchandiseinbaggage.model.core.{DeclarationJourney, ExportGoodsEntry, GoodsEntries, ImportGoodsEntry}
 import uk.gov.hmrc.merchandiseinbaggage.views.html.{DeclarationConfirmationView, Layout}
@@ -39,6 +40,14 @@ import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 
 trait CoreTestData {
+  val payApiRequest: PayApiRequest = payapi.PayApiRequest(
+    MibReference("MIBI1234567890"),
+    AmountInPence(1),
+    AmountInPence(2),
+    AmountInPence(3),
+    "http://localhost:8281/declare-commercial-goods/declaration-confirmation",
+    "http://localhost:8281/declare-commercial-goods/check-your-answers"
+  )
 
   val aSessionId: SessionId = SessionId()
 
@@ -89,9 +98,16 @@ trait CoreTestData {
       completedImportGoods.maybePurchaseDetails.get
     )
 
-  val overThresholdGoods: GoodsEntries = GoodsEntries(
-    completedImportGoods.copy(
-      maybePurchaseDetails = Some(PurchaseDetails("1915", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European"))))))
+  def overThresholdGoods(declarationType: DeclarationType = Import): GoodsEntries =
+    declarationType match {
+      case Import =>
+        GoodsEntries(completedImportGoods.copy(
+          maybePurchaseDetails = Some(PurchaseDetails("1915", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European"))))))
+
+      case Export =>
+        GoodsEntries(completedExportGoods.copy(
+          maybePurchaseDetails = Some(PurchaseDetails("1915", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European"))))))
+    }
 
   val completedDeclarationJourney: DeclarationJourney = TestOnlyController.sampleDeclarationJourney(aSessionId)
 
@@ -131,10 +147,10 @@ trait CoreTestData {
     completedDeclarationJourney.copy(goodsEntries = GoodsEntries(Seq(completedImportGoods, completedImportGoods, startedImportGoods)))
 
   val importJourneyWithGoodsOverThreshold: DeclarationJourney =
-    startedImportToGreatBritainJourney.copy(goodsEntries = overThresholdGoods)
+    startedImportToGreatBritainJourney.copy(goodsEntries = overThresholdGoods(Import))
 
   val completedImportJourneyWithGoodsOverThreshold: DeclarationJourney =
-    completedDeclarationJourney.copy(goodsEntries = overThresholdGoods)
+    completedDeclarationJourney.copy(goodsEntries = overThresholdGoods(Import))
 
   val journeyDate: LocalDate = LocalDate.now
 
@@ -144,6 +160,18 @@ trait CoreTestData {
   val sparseCompleteDeclarationJourney: DeclarationJourney =
     completedDeclarationJourney
       .copy(maybeIsACustomsAgent = Some(No), maybeJourneyDetailsEntry = Some(JourneyDetailsEntry("LHR", journeyDate)))
+
+  val startedAmendImportJourney: DeclarationJourney =
+    DeclarationJourney(aSessionId, Import, journeyType = Amend)
+
+  val startedAmendExportJourney: DeclarationJourney =
+    DeclarationJourney(aSessionId, Export, journeyType = Amend)
+
+  val completeAmendImportJourney: DeclarationJourney =
+    startedAmendImportJourney.copy(goodsEntries = GoodsEntries(completedImportGoods))
+
+  val completeAmendExportJourney: DeclarationJourney =
+    startedAmendExportJourney.copy(goodsEntries = GoodsEntries(completedExportGoods))
 
   val aPurchaseDetails: PurchaseDetails =
     PurchaseDetails("199.99", Currency("EUR", "title.euro_eur", Some("EUR"), List("Europe", "European")))
@@ -155,6 +183,8 @@ trait CoreTestData {
 
   val aCalculationResultWithNoTax: CalculationResult =
     CalculationResult(aImportGoods, AmountInPence(100), AmountInPence(0), AmountInPence(0), Some(aConversionRatePeriod))
+
+  val aCalculationResultsWithNoTax: CalculationResults = CalculationResults(Seq(aCalculationResultWithNoTax))
 
   val aCalculationResultOverThousand: CalculationResult = aCalculationResult
     .modify(_.goods.producedInEu)
@@ -272,6 +302,11 @@ trait CoreTestData {
     val result = declarationConfirmationView.apply(persistedDeclaration.get)(fakeRequest, message, appConfig)
 
     result.body
+  }
+
+  def completedAmendment(declarationType: DeclarationType) = declarationType match {
+    case Import => completeAmendImportJourney.amendmentIfRequiredAndComplete.get
+    case Export => completeAmendExportJourney.amendmentIfRequiredAndComplete.get
   }
 
 }
