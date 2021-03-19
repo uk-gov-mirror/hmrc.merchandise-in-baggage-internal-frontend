@@ -19,7 +19,7 @@ package uk.gov.hmrc.merchandiseinbaggage.model.core
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.{Export, Import}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.GoodsDestinations.GreatBritain
-import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.New
+import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.{Amend, New}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.YesNo.{No, Yes}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.{JourneyType, _}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.addresslookup.Address
@@ -139,6 +139,12 @@ case class DeclarationJourney(
   }
 
   val declarationRequiredAndComplete: Boolean = declarationIfRequiredAndComplete.isDefined
+
+  val amendmentIfRequiredAndComplete: Option[Amendment] = journeyType match {
+    case New   => None
+    case Amend => goodsEntries.declarationGoodsIfComplete.map(goods => Amendment(LocalDateTime.now, goods))
+  }
+
 }
 
 object DeclarationJourney extends MongoDateTimeFormats {
