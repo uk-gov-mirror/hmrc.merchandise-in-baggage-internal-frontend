@@ -16,14 +16,16 @@
 
 package uk.gov.hmrc.merchandiseinbaggage.controllers
 
-import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.merchandiseinbaggage.config.AppConfig
 import uk.gov.hmrc.merchandiseinbaggage.connectors.MibConnector
+import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.{Export, Import}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{Declaration, NotRequired, Paid}
 import uk.gov.hmrc.merchandiseinbaggage.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggage.repositories.DeclarationJourneyRepository
 import uk.gov.hmrc.merchandiseinbaggage.views.html.DeclarationConfirmationView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeclarationConfirmationController @Inject()(
@@ -38,15 +40,35 @@ class DeclarationConfirmationController @Inject()(
   val onPageLoad: Action[AnyContent] = actionProvider.journeyAction.async { implicit request =>
     val declarationId = request.declarationJourney.declarationId
     connector.findDeclaration(declarationId).map {
-      case Some(declaration) =>
-        resetJourney()
+      case Some(declaration) if showConfirmation(declaration) =>
+        clearAnswers()
         Ok(view(declaration))
-      case None => actionProvider.invalidRequest(s"declaration not found for id:${declarationId.value}")
+      case Some(declaration) =>
+        clearAnswers()
+        val message =
+          s"can't show confirmation page due to declarationType: ${declaration.declarationType}, paymentStatus: ${declaration.paymentStatus} and totalTaxDue: ${declaration.maybeTotalCalculationResult
+            .map(_.totalTaxDue)}"
+        actionProvider.invalidRequest(message)
+      case _ => actionProvider.invalidRequest(s"declaration not found for id:${declarationId.value}")
     }
   }
 
-  private def resetJourney()(implicit request: DeclarationJourneyRequest[AnyContent]): Future[DeclarationJourney] = {
+  val makeAnotherDeclaration: Action[AnyContent] = actionProvider.journeyAction.async { implicit request =>
     import request.declarationJourney._
-    repo.upsert(reset)
+    repo.upsert(DeclarationJourney(sessionId, declarationType)) map { _ =>
+      Redirect(routes.GoodsDestinationController.onPageLoad())
+    }
+  }
+
+  private def clearAnswers()(implicit request: DeclarationJourneyRequest[AnyContent]): Future[DeclarationJourney] = {
+    import request.declarationJourney._
+    repo.upsert(DeclarationJourney(sessionId, declarationType).copy(declarationId = declarationId))
+  }
+
+  private def showConfirmation(declaration: Declaration): Boolean = {
+
+    def paymentSuccess = declaration.paymentStatus.contains(Paid) || declaration.paymentStatus.contains(NotRequired)
+
+    declaration.declarationType == Export || (declaration.declarationType == Import && paymentSuccess)
   }
 }

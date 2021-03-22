@@ -168,5 +168,8 @@ object DeclarationJourney extends MongoDateTimeFormats {
         )
     }
 
+  def apply(sessionId: SessionId, declarationType: DeclarationType): DeclarationJourney =
+    apply(sessionId, declarationType, New)
+
   val id = "sessionId"
 }

@@ -17,6 +17,7 @@
 @import uk.gov.hmrc.merchandiseinbaggage.config.AppConfig
 @import uk.gov.hmrc.merchandiseinbaggage.controllers.routes._
 @import uk.gov.hmrc.merchandiseinbaggage.model.api.Declaration
+@import uk.gov.hmrc.merchandiseinbaggage.model.api.Declaration._
 @import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType._
 @import uk.gov.hmrc.merchandiseinbaggage.views.html.components.link
 @import uk.gov.hmrc.merchandiseinbaggage.utils.DateUtils._
@@ -45,12 +46,12 @@
  <h2 id="whatToDoNextId" class="govuk-heading-m" id="main-message">@messages("declarationConfirmation.h2.1")</h2>
  <p class="govuk-body">@messages("declarationConfirmation.ul.p")</p>
  <ul id="whatToDoNextUlId" class="govuk-list govuk-list--bullet">
-  <li>@messages("declarationConfirmation.ul.1")</li>
   @if(declaration.declarationType == Import) {
-   <li>@messages("declarationConfirmation.ul.2") <strong>@messages("declarationConfirmation.ul.2.strong")</strong> @messages("declarationConfirmation.ul.2.2")</li>
+   <li>@messages("declarationConfirmation.ul.1") <strong>@messages("declarationConfirmation.ul.1.strong")</strong> @messages("declarationConfirmation.ul.1.1")</li>
   } else {
    @Html("")
   }
+  <li>@messages("declarationConfirmation.ul.2")</li>
 
   @for(calcResult <- declaration.maybeTotalCalculationResult) {
    @if(calcResult.calculationResults.proofOfOriginNeeded && declaration.declarationType == Import) {
@@ -125,6 +126,7 @@
     <dd id="eori" class="govuk-summary-list__value" style="text-transform: capitalize">@declaration.eori</dd>
    </div>
   </dl>
+
   <p class="govuk-body">
    <a id="makeAnotherDeclarationId" class='govuk-link' href="@ImportExportChoiceController.onPageLoad().url">@messages("declarationConfirmation.makeAnotherDeclaration")</a>
   </p>
