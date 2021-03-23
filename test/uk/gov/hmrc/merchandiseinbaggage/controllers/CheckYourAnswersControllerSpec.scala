@@ -86,56 +86,58 @@ class CheckYourAnswersControllerSpec extends DeclarationJourneyControllerSpec wi
   //TODO find out why are commented out
   forAll(declarationTypes) { importOrExport =>
     "onPageLoad" should {
-//      s"return 200 for type $importOrExport" in {
-//        givenTheUserIsAuthenticatedAndAuthorised()
-//
-//        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, aSessionId)
-//
-//        val eventualResult = controller(givenADeclarationJourneyIsPersisted(dynamicCompletedJourney(importOrExport))).onPageLoad()(request)
-//        val result = contentAsString(eventualResult)
-//
-//        status(eventualResult) mustBe 200
-//        result must include(messages("checkYourAnswers.title"))
-//        result must include(messages("checkYourAnswers.change"))
-//        result must include(messages("checkYourAnswers.detailsOfTheGoods"))
-//        result must include(messages("checkYourAnswers.detailsOfTheGoods.category"))
-//        result must include(messages("checkYourAnswers.detailsOfTheGoods.quantity"))
-//        result must include(messages("checkYourAnswers.addMoreGoods"))
-//        result must include(messages("checkYourAnswers.personalDetails"))
-//        result must include(messages("checkYourAnswers.journeyDetails.travellingByVehicle"))
-//        result must include(messages("checkYourAnswers.journeyDetails.vehicleRegistrationNumber"))
-//        result must include(messages("checkYourAnswers.sendDeclaration.acknowledgement"))
-//        result must include(messages(s"checkYourAnswers.sendDeclaration.$importOrExport.acknowledgement.1"))
-//        result must include(messages("checkYourAnswers.sendDeclaration.confirm"))
-//        result must include(messages("checkYourAnswers.sendDeclaration.warning"))
-//        result must include(messages(s"checkYourAnswers.sendDeclaration.warning.$importOrExport.message"))
-//
-//        if (importOrExport == Import) {
-//          result must include(messages("checkYourAnswers.detailsOfTheGoods.vatRate"))
-//          result must include(messages("checkYourAnswers.detailsOfTheGoods.producedInEu"))
-//          result must include(messages("checkYourAnswers.detailsOfTheGoods.price"))
-//          result must include(messages("checkYourAnswers.detailsOfTheGoods.paymentDue"))
-//          result must include(messages("checkYourAnswers.journeyDetails.placeOfArrival"))
-//          result must include(messages("checkYourAnswers.journeyDetails.dateOfArrival"))
-//          result must include(messages("checkYourAnswers.payButton"))
-//        }
-//
-//        if (importOrExport == Export) {
-//          result must include(messages("checkYourAnswers.makeDeclarationButton"))
-//          result must include(messages("checkYourAnswers.detailsOfTheGoods.destination"))
-//          result must include(messages("checkYourAnswers.journeyDetails.placeOfDeparture"))
-//          result must include(messages("checkYourAnswers.journeyDetails.dateOfDeparture"))
-//        }
-//      }
+      s"return 200 for type $importOrExport" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
 
-//      s"return 200 for type $importOrExport when email is None" in {
-//        givenTheUserIsAuthenticatedAndAuthorised()
-//        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, aSessionId)
-//        val eventualResult = controller(
-//          givenADeclarationJourneyIsPersisted(dynamicCompletedJourney(importOrExport).copy(maybeEmailAddress = None))).onPageLoad()(request)
-//
-//        status(eventualResult) mustBe 200
-//      }
+        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, aSessionId)
+
+        val eventualResult = controller(aCalculationResults, givenADeclarationJourneyIsPersisted(dynamicCompletedJourney(importOrExport)))
+          .onPageLoad()(request)
+        val result = contentAsString(eventualResult)
+
+        status(eventualResult) mustBe 200
+        result must include(messages("checkYourAnswers.title"))
+        result must include(messages("checkYourAnswers.change"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods.category"))
+        result must include(messages("checkYourAnswers.detailsOfTheGoods.quantity"))
+        result must include(messages("checkYourAnswers.addMoreGoods"))
+        result must include(messages("checkYourAnswers.personalDetails"))
+        result must include(messages("checkYourAnswers.journeyDetails.travellingByVehicle"))
+        result must include(messages("checkYourAnswers.journeyDetails.vehicleRegistrationNumber"))
+        result must include(messages("checkYourAnswers.sendDeclaration.acknowledgement"))
+        result must include(messages(s"checkYourAnswers.sendDeclaration.$importOrExport.acknowledgement.1"))
+        result must include(messages("checkYourAnswers.sendDeclaration.confirm"))
+        result must include(messages("checkYourAnswers.sendDeclaration.warning"))
+        result must include(messages(s"checkYourAnswers.sendDeclaration.warning.$importOrExport.message"))
+
+        if (importOrExport == Import) {
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.vatRate"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.producedInEu"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.price"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.paymentDue"))
+          result must include(messages("checkYourAnswers.journeyDetails.placeOfArrival"))
+          result must include(messages("checkYourAnswers.journeyDetails.dateOfArrival"))
+          result must include(messages("checkYourAnswers.payButton"))
+        }
+
+        if (importOrExport == Export) {
+          result must include(messages("checkYourAnswers.makeDeclarationButton"))
+          result must include(messages("checkYourAnswers.detailsOfTheGoods.destination"))
+          result must include(messages("checkYourAnswers.journeyDetails.placeOfDeparture"))
+          result must include(messages("checkYourAnswers.journeyDetails.dateOfDeparture"))
+        }
+      }
+
+      s"return 200 for type $importOrExport when email is None" in {
+        givenTheUserIsAuthenticatedAndAuthorised()
+        val request = buildGet(routes.CheckYourAnswersController.onPageLoad().url, aSessionId)
+        val eventualResult = controller(
+          aCalculationResults,
+          givenADeclarationJourneyIsPersisted(dynamicCompletedJourney(importOrExport).copy(maybeEmailAddress = None))).onPageLoad()(request)
+
+        status(eventualResult) mustBe 200
+      }
     }
   }
 
@@ -147,7 +149,8 @@ class CheckYourAnswersControllerSpec extends DeclarationJourneyControllerSpec wi
       givenTaxArePaid(TpsId("123"))
       val request = buildPost(routes.CheckYourAnswersController.onSubmit().url, completedDeclarationJourney.sessionId)
 
-      (mockTpsPaymentsService.createTpsPayments(_: String, _: Declaration, _: CalculationResults)(_: HeaderCarrier))
+      (mockTpsPaymentsService
+        .createTpsPayments(_: String, _: Declaration, _: CalculationResults)(_: HeaderCarrier))
         .expects("userId", *, *, *)
         .returning(Future.successful(TpsId("userId")))
         .once()
