@@ -15,12 +15,20 @@
  *@
 
 @import uk.gov.hmrc.merchandiseinbaggage.config.AppConfig
-@import uk.gov.hmrc.merchandiseinbaggage.views.ViewUtils._
+@import uk.gov.hmrc.merchandiseinbaggage.controllers.routes._
+@import uk.gov.hmrc.merchandiseinbaggage.views.html.components
 
-@this(layout: Layout)
+@this(layout: Layout, link: components.link, p: components.p)
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @layout(pageTitle = Some(titleNoForm("invalidRequest.title")), maybeBackButtonUrl = None, maybeDeclarationType = None) {
-  <h1 class="govuk-heading-xl" id="main-message">@messages("invalidRequest.heading")</h1>
+    <h1 class="govuk-heading-xl" id="main-message">@messages("invalidRequest.title")</h1>
+
+    @p(Html(messages("invalidRequest.li1")))
+
+    <p class="govuk-body">
+        @link(ResetServiceController.onPageLoad.url, messages("invalidRequest.restart"), true)
+    </p>
+
 }
