@@ -41,8 +41,8 @@ class DeclarationJourneyActionProvider @Inject()(
     journeyAction andThen goodsActionRefiner(idx)
 
   def invalidRequest(warnMessage: String)(implicit request: RequestHeader): Result = {
-    DeclarationJourneyLogger.warn(s"$warnMessage so redirecting to ${routes.InvalidRequestController.onPageLoad()}")(request)
-    Redirect(routes.InvalidRequestController.onPageLoad())
+    DeclarationJourneyLogger.warn(s"$warnMessage so redirecting to ${routes.CannotAccessPageController.onPageLoad()}")(request)
+    Redirect(routes.CannotAccessPageController.onPageLoad())
   }
 
   def invalidRequestF(warningMessage: String)(implicit request: RequestHeader): Future[Result] =

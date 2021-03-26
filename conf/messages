@@ -44,8 +44,9 @@ next.button = Next
 
 
 # Invalid request page
-invalidRequest.title = Invalid request
-invalidRequest.heading = Invalid request
+invalidRequest.title = You cannot access this page
+invalidRequest.li1 = You need to provide more details about the goods before you can view this page.
+invalidRequest.restart = Start a new declaration
 
 importExportChoice.header = What do you want to do?
 importExportChoice.title = What do you want to do?

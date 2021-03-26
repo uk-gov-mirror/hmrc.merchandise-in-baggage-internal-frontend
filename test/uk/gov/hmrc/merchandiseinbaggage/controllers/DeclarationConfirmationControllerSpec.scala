@@ -84,8 +84,7 @@ class DeclarationConfirmationControllerSpec extends DeclarationJourneyController
 
     val eventualResult = controller.onPageLoad()(request)
     status(eventualResult) mustBe 303
-    // TODO FIX LINK TEST /declare-commercial-goods/cannot-access-page
-    //   redirectLocation(eventualResult) mustBe Some("/declare-commercial-goods/cannot-access-page")
+    redirectLocation(eventualResult) mustBe Some("/declare-commercial-goods/cannot-access-page")
   }
 
   "Import with value over 1000gbp, add an 'take proof' line" in {
