@@ -339,6 +339,8 @@ trait CoreTestData {
       .copy(paymentStatus = Some(Paid), maybeTotalCalculationResult = Some(aTotalCalculationResult), amendments = Seq(paidAmendment))
   }
 
+  val journeyPort = Port("DVR", "title.dover", isGB = true, List("Port of Dover"))
+
   implicit class JourneyToDeclaration(declarationJourney: DeclarationJourney) {
 
     import declarationJourney._
