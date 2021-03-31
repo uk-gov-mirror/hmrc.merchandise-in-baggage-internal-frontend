@@ -357,7 +357,7 @@ trait CoreTestData {
         maybeCustomsAgent,
         maybeEori.getOrElse(Eori("GB123")),
         JourneyInSmallVehicle(
-          Port("DVR", "title.dover", isGB = true, List("Port of Dover")),
+          journeyPort,
           maybeJourneyDetailsEntry.getOrElse(JourneyDetailsEntry("BH", LocalDate.now)).dateOfTravel,
           maybeRegistrationNumber.getOrElse("Lx123")
         ),
