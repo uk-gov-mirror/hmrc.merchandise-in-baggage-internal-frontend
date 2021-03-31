@@ -15,16 +15,14 @@
  */
 
 package uk.gov.hmrc.merchandiseinbaggage.smoketests.pages
-import org.openqa.selenium.htmlunit.HtmlUnitDriver
 import org.scalatest.{Assertion, Suite}
 import uk.gov.hmrc.merchandiseinbaggage.smoketests.BaseUiSpec
 import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.PreviousDeclarationDetailsPage._
 
-object PreviousDeclarationDetailsPage extends Page {
+object PreviousDeclarationDetailsPage {
   val path = "/declare-commercial-goods/previous-declaration-details"
   val title = "Details of your existing declaration"
 
-  override def submitPage[T](formData: T)(implicit webDriver: HtmlUnitDriver): Unit = ???
 }
 
 trait PreviousDeclarationDetailsPage extends BaseUiSpec { this: Suite =>
