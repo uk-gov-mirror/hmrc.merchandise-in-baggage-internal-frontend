@@ -82,7 +82,10 @@ class RetrieveDeclarationController @Inject()(
                 )) map { _ =>
               Redirect(routes.PreviousDeclarationDetailsController.onPageLoad())
             }
-          case _ => Future successful Redirect(routes.DeclarationNotFoundController.onPageLoad())
+          case _ =>
+            repo.upsert(request.declarationJourney.copy(maybeRetrieveDeclaration = Some(retrieveDeclaration))) map { _ =>
+              Redirect(routes.DeclarationNotFoundController.onPageLoad())
+            }
         }
       )
       .flatten
