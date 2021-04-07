@@ -15,25 +15,28 @@
  */
 
 package uk.gov.hmrc.merchandiseinbaggage.smoketests.pages
+
 import org.openqa.selenium.htmlunit.HtmlUnitDriver
 import org.scalatest.{Assertion, Suite}
+import org.scalatestplus.selenium.WebBrowser.{find, _}
 import uk.gov.hmrc.merchandiseinbaggage.smoketests.BaseUiSpec
-import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.PreviousDeclarationDetailsPage._
-import org.scalatestplus.selenium.WebBrowser._
+import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.DeclarationNotFoundPage._
 
-object PreviousDeclarationDetailsPage extends Page {
-  val path = "/declare-commercial-goods/previous-declaration-details"
-  val title = "Details of your existing declaration"
+object DeclarationNotFoundPage extends Page {
+  val path = "/declare-commercial-goods/declaration-not-found"
+  val title =
+    "Declaration not found - Declare commercial goods carried in accompanied baggage or small vehicles - GOV.UK"
 
-  override def submitPage[T](formData: T)(implicit webDriver: HtmlUnitDriver): Unit =
-    click.on(NameQuery("continue"))
-
+  def submitPage[T](formData: T)(implicit webDriver: HtmlUnitDriver): Unit = {
+    val button = find(IdQuery(formData.toString)).get
+    click on button
+  }
 }
 
-trait PreviousDeclarationDetailsPage extends BaseUiSpec { this: Suite =>
+trait DeclarationNotFoundPage extends BaseUiSpec { this: Suite =>
 
-  def goToPreviousDeclarationDetailsPage: Assertion = {
+  def goToDeclarationNotFoundPage: Assertion = {
     goto(path)
-    pageTitle must startWith(title)
+    pageTitle mustBe title
   }
 }

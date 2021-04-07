@@ -16,7 +16,15 @@
 
 package uk.gov.hmrc.merchandiseinbaggage.smoketests.pages
 
-object StartImportPage {
-  val path = "/declare-commercial-goods/start-import"
-  val title = "What do you want to do? - Declare commercial goods carried in accompanied baggage or small vehicles - GOV.UK"
+import org.openqa.selenium.htmlunit.HtmlUnitDriver
+import org.scalatestplus.selenium.WebBrowser.{IdQuery, _}
+
+object NeworExistingDeclarationPage extends Page {
+  val path = "/declare-commercial-goods/new-or-existing"
+  val title = "What do you want to do?"
+
+  def submitPage[T](formData: T)(implicit webDriver: HtmlUnitDriver): Unit = {
+    click.on(IdQuery(formData.toString))
+    click.on(NameQuery("continue"))
+  }
 }
