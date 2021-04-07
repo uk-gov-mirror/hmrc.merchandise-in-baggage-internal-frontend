@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.merchandiseinbaggage.smoketests
 
-import uk.gov.hmrc.merchandiseinbaggage.model.api.{DeclarationType, Paid, SessionId}
-import uk.gov.hmrc.merchandiseinbaggage.model.core.{DeclarationJourney, RetrieveDeclaration}
-import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.{ImportExportChoicePage, PreviousDeclarationDetailsPage, RetrieveDeclarationPage}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.Export
+import uk.gov.hmrc.merchandiseinbaggage.model.api.YesNo.{No, Yes}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{CategoryQuantityOfGoods, Paid}
+import uk.gov.hmrc.merchandiseinbaggage.model.core.RetrieveDeclaration
+import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.{CheckYourAnswersPage, ExciseAndRestrictedGoodsPage, GoodsTypeQuantityPage, ImportExportChoicePage, PreviousDeclarationDetailsPage, PurchaseDetailsExportPage, RetrieveDeclarationPage, ReviewGoodsPage, SearchGoodsCountryPage, ValueWeightOfGoodsPage}
 import uk.gov.hmrc.merchandiseinbaggage.stubs.MibBackendStub._
 import uk.gov.hmrc.merchandiseinbaggage.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
-
-import java.time.LocalDateTime
 
 class AdditionalDeclarationExportSpec extends BaseUiSpec {
 
@@ -34,27 +34,48 @@ class AdditionalDeclarationExportSpec extends BaseUiSpec {
 
       submitPage(ImportExportChoicePage, "AddToExisting")
 
-      val paidDeclaration = declaration.copy(paymentStatus = Some(Paid))
+      val paidDeclaration = declaration.copy(
+        declarationType = Export,
+        paymentStatus = Some(Paid),
+        maybeTotalCalculationResult = Some(aTotalCalculationResult),
+        eori = eori,
+        mibReference = mibReference)
 
       givenFindByDeclarationReturnSuccess(mibReference, eori, paidDeclaration)
 
-      val sessionId = SessionId()
-      val created = LocalDateTime.now
-      val id = paidDeclaration.declarationId
-      val exportJourney: DeclarationJourney = completedDeclarationJourney
-        .copy(
-          sessionId = sessionId,
-          declarationType = DeclarationType.Export,
-          maybeEori = Some(eori),
-          createdAt = created,
-          declarationId = id)
-
-      givenADeclarationJourneyIsPersisted(exportJourney)
-      givenPersistedDeclarationIsFound(exportJourney.declarationIfRequiredAndComplete.get, id)
+      givenPersistedDeclarationIsFound(paidDeclaration, paidDeclaration.declarationId)
 
       submitPage(RetrieveDeclarationPage, RetrieveDeclaration(mibReference, eori))
 
-      webDriver.getCurrentUrl mustBe fullUrl(PreviousDeclarationDetailsPage.path)
+      webDriver.getPageSource must include("wine")
+      webDriver.getPageSource must include("99.99, Euro (EUR)")
+
+      submitPage(PreviousDeclarationDetailsPage, "continue")
+
+      // controlled or restricted goods
+      submitPage(ExciseAndRestrictedGoodsPage, No)
+
+      submitPage(ValueWeightOfGoodsPage, Yes)
+
+      submitPage(GoodsTypeQuantityPage, CategoryQuantityOfGoods("sock", "one"))
+
+      submitPage(SearchGoodsCountryPage, "FR")
+
+      submitPage(PurchaseDetailsExportPage, "100.50")
+
+      // Review the goods added
+      webDriver.getPageSource must include("sock")
+      webDriver.getPageSource must include("France")
+      webDriver.getPageSource must include("£100.50")
+
+      submitPage(ReviewGoodsPage, "No")
+
+      webDriver.getPageSource must include("sock")
+      webDriver.getPageSource must include("France")
+
+      webDriver.getPageSource must include("makeDeclarationButton")
+      webDriver.getCurrentUrl mustBe fullUrl(CheckYourAnswersPage.path)
+
     }
   }
 }
