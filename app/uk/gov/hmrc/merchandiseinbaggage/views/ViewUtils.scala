@@ -20,7 +20,7 @@ import play.api.data.Form
 import play.api.i18n.Messages
 import play.api.libs.json.Json
 import play.api.mvc.Request
-import uk.gov.hmrc.merchandiseinbaggage.controllers.DeclarationJourneyRequest
+import uk.gov.hmrc.merchandiseinbaggage.controllers.{DeclarationGoodsRequest, DeclarationJourneyRequest}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.Country
 import uk.gov.hmrc.merchandiseinbaggage.service.CountryService
 import uk.gov.hmrc.merchandiseinbaggage.utils.DataModelEnriched.CountryEnriched
@@ -46,6 +46,7 @@ object ViewUtils {
 
   def googleAnalyticsJourneyType(request: Request[_]): String = request match {
     case r: DeclarationJourneyRequest[_] => r.declarationJourney.journeyType.entryName.toLowerCase
+    case r: DeclarationGoodsRequest[_]   => r.declarationJourney.journeyType.entryName.toLowerCase
     case _                               => ""
   }
 
