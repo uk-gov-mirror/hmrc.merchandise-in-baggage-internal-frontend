@@ -20,8 +20,9 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.merchandiseinbaggage.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggage.auth.AuthRequest
-import uk.gov.hmrc.merchandiseinbaggage.controllers.DeclarationJourneyRequest
+import uk.gov.hmrc.merchandiseinbaggage.controllers.{DeclarationGoodsRequest, DeclarationJourneyRequest}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.Amend
+import uk.gov.hmrc.merchandiseinbaggage.model.core.GoodsEntry
 import uk.gov.hmrc.merchandiseinbaggage.support.BaseSpecWithApplication
 import uk.gov.hmrc.merchandiseinbaggage.views.ViewUtils
 
@@ -29,39 +30,82 @@ class ViewUtilsSpec extends BaseSpecWithApplication with CoreTestData {
 
   val fakeAuthRequest: AuthRequest[AnyContentAsEmpty.type] = AuthRequest(FakeRequest("", ""), None)
 
-  "new import journey" in {
-    val request = new DeclarationJourneyRequest(startedImportJourney, fakeAuthRequest)
-    val result = ViewUtils.googleAnalyticsJourneyType(request)
+  "DeclarationJourney" should {
+    "new import journey" in {
+      val request = new DeclarationJourneyRequest(startedImportJourney, fakeAuthRequest)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
 
-    result mustBe ("new")
+      result mustBe ("new")
+    }
+
+    "new export journey" in {
+      val request = new DeclarationJourneyRequest(startedExportJourney, fakeAuthRequest)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
+
+      result mustBe ("new")
+    }
+
+    "amend import journey" in {
+      val request = new DeclarationJourneyRequest(startedImportJourney.copy(journeyType = Amend), fakeAuthRequest)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
+
+      result mustBe ("amend")
+    }
+
+    "amend export journey" in {
+      val request = new DeclarationJourneyRequest(startedExportJourney.copy(journeyType = Amend), fakeAuthRequest)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
+
+      result mustBe ("amend")
+    }
+
+    "unknown journey" in {
+      val request = fakeAuthRequest
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
+
+      result mustBe ("")
+    }
   }
 
-  "new export journey" in {
-    val request = new DeclarationJourneyRequest(startedExportJourney, fakeAuthRequest)
-    val result = ViewUtils.googleAnalyticsJourneyType(request)
+  "DeclarationGoodsRequest" should {
+    "new import journey" in {
+      val djr = new DeclarationJourneyRequest(startedImportJourney, fakeAuthRequest)
+      val request = new DeclarationGoodsRequest( djr, startedImportGoods)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
 
-    result mustBe ("new")
-  }
+      result mustBe ("new")
+    }
 
-  "amend import journey" in {
-    val request = new DeclarationJourneyRequest(startedImportJourney.copy(journeyType = Amend), fakeAuthRequest)
-    val result = ViewUtils.googleAnalyticsJourneyType(request)
+    "new export journey" in {
+      val djr = new DeclarationJourneyRequest(startedExportJourney, fakeAuthRequest)
+      val request = new DeclarationGoodsRequest( djr, startedExportGoods)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
 
-    result mustBe ("amend")
-  }
+      result mustBe ("new")
+    }
 
-  "amend export journey" in {
-    val request = new DeclarationJourneyRequest(startedExportJourney.copy(journeyType = Amend), fakeAuthRequest)
-    val result = ViewUtils.googleAnalyticsJourneyType(request)
+    "amend import journey" in {
+      val djr = new DeclarationJourneyRequest(startedImportJourney.copy(journeyType = Amend), fakeAuthRequest)
+      val request = new DeclarationGoodsRequest( djr, startedImportGoods)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
 
-    result mustBe ("amend")
-  }
+      result mustBe ("amend")
+    }
 
-  "unknown journey" in {
-    val request = fakeAuthRequest
-    val result = ViewUtils.googleAnalyticsJourneyType(request)
+    "amend export journey" in {
+      val djr = new DeclarationJourneyRequest(startedExportJourney.copy(journeyType = Amend), fakeAuthRequest)
+      val request = new DeclarationGoodsRequest( djr, startedExportGoods)
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
 
-    result mustBe ("")
+      result mustBe ("amend")
+    }
+
+    "unknown journey" in {
+      val request = fakeAuthRequest
+      val result = ViewUtils.googleAnalyticsJourneyType(request)
+
+      result mustBe ("")
+    }
   }
 
 }
