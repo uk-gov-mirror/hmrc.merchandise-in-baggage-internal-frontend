@@ -59,4 +59,21 @@ object DeclarationView {
     (now.isAfter(startOfRange) || now.isEqual(startOfRange)) &&
     (now.isBefore(endOfRange) || now.isEqual(endOfRange))
   }
+
+  def proofOfOriginNeeded(declaration: Declaration): Boolean = {
+    def calcAmount(maybeTotalCalculationResult: Option[TotalCalculationResult]): Long =
+      maybeTotalCalculationResult.fold(0L) {
+        _.calculationResults.calculationResults
+          .filter(_.goods.producedInEu == YesNoDontKnow.Yes)
+          .map(_.gbpAmount.value)
+          .sum
+      }
+
+    if (declaration.declarationType == Import) {
+      (calcAmount(declaration.maybeTotalCalculationResult) + declaration.amendments
+        .filter(amendment => List(Some(Paid), Some(NotRequired)).contains(amendment.paymentStatus))
+        .map(x => calcAmount(x.maybeTotalCalculationResult))
+        .sum) > 100000L
+    } else false
+  }
 }

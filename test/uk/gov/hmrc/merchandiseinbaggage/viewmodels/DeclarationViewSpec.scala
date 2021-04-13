@@ -17,8 +17,11 @@
 package uk.gov.hmrc.merchandiseinbaggage.viewmodels
 
 import uk.gov.hmrc.merchandiseinbaggage.CoreTestData
-import uk.gov.hmrc.merchandiseinbaggage.model.api.{AmountInPence, JourneyOnFoot}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.Export
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{AmountInPence, JourneyOnFoot, NotRequired, Paid}
 import uk.gov.hmrc.merchandiseinbaggage.support.BaseSpec
+import uk.gov.hmrc.merchandiseinbaggage.viewmodels.DeclarationView.proofOfOriginNeeded
+import com.softwaremill.quicklens._
 
 import java.time.LocalDate
 
@@ -106,6 +109,108 @@ class DeclarationViewSpec extends BaseSpec with CoreTestData {
 
       val result = DeclarationView.journeyDateWithInAllowedRange(updatedDeclaration)
       result mustBe false
+    }
+  }
+
+  "proofOfOriginNeeded" should {
+    "true if Declaration > £1000 paid and no Amendments" in {
+      val decl = declaration
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsOverLimit))
+
+      proofOfOriginNeeded(decl) mustBe true
+    }
+
+    "false if Declaration < £1000 paid and no Amendments" in {
+      val decl = declaration
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+
+      proofOfOriginNeeded(decl) mustBe false
+    }
+
+    "true if Declaration and Amendments > £1000" in {
+      val decl = declarationWithAmendment
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(0).paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.amendments.at(0).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsOverLimit))
+
+      proofOfOriginNeeded(decl) mustBe true
+    }
+
+    "false if Declaration paid and Amendments > £1000 but UNPAID" in {
+      val decl = declarationWithAmendment
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(0).paymentStatus)
+        .setTo(None)
+        .modify(_.amendments.at(0).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+
+      proofOfOriginNeeded(decl) mustBe false
+    }
+
+    "true if Declaration paid and 3 Amendments last > £1000" in {
+      val decl = declarationWith3Amendment
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(0).paymentStatus)
+        .setTo(None)
+        .modify(_.amendments.at(0).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(1).paymentStatus)
+        .setTo(None)
+        .modify(_.amendments.at(1).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(2).paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.amendments.at(2).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsOverLimit))
+
+      proofOfOriginNeeded(decl) mustBe true
+    }
+
+    "false if Declaration paid and 3 Amendments last No payment" in {
+      val decl = declarationWith3Amendment
+        .modify(_.paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(0).paymentStatus)
+        .setTo(None)
+        .modify(_.amendments.at(0).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(1).paymentStatus)
+        .setTo(Some(Paid))
+        .modify(_.amendments.at(1).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+        .modify(_.amendments.at(2).paymentStatus)
+        .setTo(Some(NotRequired))
+        .modify(_.amendments.at(2).maybeTotalCalculationResult)
+        .setTo(Some(calculationResultsUnderLimit))
+
+      proofOfOriginNeeded(decl) mustBe true
+    }
+
+    "false if Declaration is Export" in {
+      val decl = declaration
+        .modify(_.declarationType)
+        .setTo(Export)
+
+      proofOfOriginNeeded(decl) mustBe false
     }
   }
 }
