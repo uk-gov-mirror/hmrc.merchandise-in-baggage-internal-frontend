@@ -237,6 +237,8 @@ trait CoreTestData {
     .modify(_.paymentStatus)
     .setTo(Some(NotRequired))
 
+  val declarationWithAmendment = declaration.copy(amendments = Seq(completedAmendment(declaration.declarationType)))
+
   def aSuccessCheckResponse(eoriNumber: String = aEoriNumber): String =
     s"""{
        |  "eori": "$eoriNumber",
