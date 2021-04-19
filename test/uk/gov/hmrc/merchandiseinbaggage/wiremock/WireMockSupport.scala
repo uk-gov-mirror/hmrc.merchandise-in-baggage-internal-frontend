@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.merchandiseinbaggage.support
+package uk.gov.hmrc.merchandiseinbaggage.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -28,11 +28,20 @@ trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
 
   WireMock.configureFor(WireMockSupport.port)
 
-  override def beforeEach(): Unit = WireMock.reset()
+  override def beforeEach(): Unit = {
+    WireMock.reset()
+    super.beforeEach()
+  }
 
-  override protected def beforeAll(): Unit = wireMockServer.start()
+  override protected def beforeAll(): Unit = {
+    wireMockServer.start()
+    super.beforeAll()
+  }
 
-  override protected def afterAll(): Unit = wireMockServer.stop()
+  override protected def afterAll(): Unit = {
+    wireMockServer.stop()
+    super.afterAll()
+  }
 }
 
 object WireMockSupport {

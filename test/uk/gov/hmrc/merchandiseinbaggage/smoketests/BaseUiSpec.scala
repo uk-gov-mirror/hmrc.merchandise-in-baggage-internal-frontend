@@ -19,7 +19,7 @@ package uk.gov.hmrc.merchandiseinbaggage.smoketests
 import org.openqa.selenium.{By, WebElement}
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.selenium.{HtmlUnit, WebBrowser}
-import uk.gov.hmrc.merchandiseinbaggage.CoreTestData
+import uk.gov.hmrc.merchandiseinbaggage.{BaseSpecWithApplication, CoreTestData}
 import uk.gov.hmrc.merchandiseinbaggage.controllers.routes
 import uk.gov.hmrc.merchandiseinbaggage.model.api.DeclarationType.Import
 import uk.gov.hmrc.merchandiseinbaggage.model.api.JourneyTypes.New
@@ -27,8 +27,7 @@ import uk.gov.hmrc.merchandiseinbaggage.model.api.{DeclarationType, JourneyType}
 import uk.gov.hmrc.merchandiseinbaggage.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggage.model.core.ImportExportChoices.MakeImport
 import uk.gov.hmrc.merchandiseinbaggage.smoketests.pages.Page
-import uk.gov.hmrc.merchandiseinbaggage.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
-import uk.gov.hmrc.merchandiseinbaggage.support.{BaseSpecWithApplication, WireMockSupport}
+import uk.gov.hmrc.merchandiseinbaggage.wiremock.WireMockSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
@@ -75,7 +74,6 @@ class BaseUiSpec extends BaseSpecWithApplication with WireMockSupport with HtmlU
     journeyType: JourneyType = New,
     declarationType: DeclarationType = Import,
     declarationJourney: DeclarationJourney = completedDeclarationJourney): DeclarationJourney = {
-    givenTheUserIsAuthenticatedAndAuthorised()
     goto(routes.ImportExportChoiceController.onPageLoad().url)
     click.on(IdQuery(MakeImport.toString))
     click.on(NameQuery("continue"))

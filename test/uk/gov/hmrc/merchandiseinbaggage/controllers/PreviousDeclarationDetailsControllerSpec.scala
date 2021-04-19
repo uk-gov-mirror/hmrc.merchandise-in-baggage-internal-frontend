@@ -24,9 +24,9 @@ import uk.gov.hmrc.merchandiseinbaggage.controllers.routes.PreviousDeclarationDe
 import uk.gov.hmrc.merchandiseinbaggage.model.api.{DeclarationType, Paid, SessionId}
 import uk.gov.hmrc.merchandiseinbaggage.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggage.stubs.MibBackendStub.givenPersistedDeclarationIsFound
-import uk.gov.hmrc.merchandiseinbaggage.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
-import uk.gov.hmrc.merchandiseinbaggage.support.{DeclarationJourneyControllerSpec, WireMockSupport}
+import uk.gov.hmrc.merchandiseinbaggage.support.DeclarationJourneyControllerSpec
 import uk.gov.hmrc.merchandiseinbaggage.views.html.PreviousDeclarationDetailsView
+import uk.gov.hmrc.merchandiseinbaggage.wiremock.WireMockSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -46,7 +46,6 @@ class PreviousDeclarationDetailsControllerSpec
 
   "creating a page" should {
     "return 200 if declaration exists" in {
-      givenTheUserIsAuthenticatedAndAuthorised
       val importJourney: DeclarationJourney = completedDeclarationJourney
         .copy(
           sessionId = aSessionId,
@@ -70,7 +69,6 @@ class PreviousDeclarationDetailsControllerSpec
     }
 
     "return 303 if declaration does NOT exist" in {
-      givenTheUserIsAuthenticatedAndAuthorised
       val importJourney: DeclarationJourney = completedDeclarationJourney
         .copy(
           sessionId = aSessionId,
@@ -91,7 +89,6 @@ class PreviousDeclarationDetailsControllerSpec
     }
 
     "return 200 if import declaration with amendment exists " in {
-      givenTheUserIsAuthenticatedAndAuthorised
       val importJourney: DeclarationJourney = completedDeclarationJourney
         .copy(
           sessionId = aSessionId,
@@ -119,7 +116,6 @@ class PreviousDeclarationDetailsControllerSpec
     }
 
     "return 200 if export declaration with amendment exists " in {
-      givenTheUserIsAuthenticatedAndAuthorised
       val exportJourney: DeclarationJourney = completedDeclarationJourney
         .copy(
           sessionId = aSessionId,
@@ -147,7 +143,6 @@ class PreviousDeclarationDetailsControllerSpec
   }
 
   "on submit update and redirect" in {
-    givenTheUserIsAuthenticatedAndAuthorised
     val postRequest = buildPost(PreviousDeclarationDetailsController.onPageLoad().url, aSessionId)
 
     val result = controller.onSubmit()(postRequest)

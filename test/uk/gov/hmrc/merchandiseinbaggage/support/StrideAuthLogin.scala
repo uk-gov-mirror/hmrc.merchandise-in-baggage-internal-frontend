@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.merchandiseinbaggage.smoketests.pages
+package uk.gov.hmrc.merchandiseinbaggage.support
 
-import uk.gov.hmrc.merchandiseinbaggage.BaseSpecWithApplication
+import org.scalatest.{BeforeAndAfterEach, Suite}
+import uk.gov.hmrc.merchandiseinbaggage.support.MockStrideAuth.givenTheUserIsAuthenticatedAndAuthorised
+import com.typesafe.config.ConfigFactory
 
-object ProgressDeletedPage extends BaseSpecWithApplication {
-  val path = "/declare-commercial-goods/progress-deleted"
+trait StrideAuthLogin extends BeforeAndAfterEach { this: Suite =>
+
+  override def beforeEach() {
+    super.beforeEach()
+    if (StrideAuthLogin.internal) givenTheUserIsAuthenticatedAndAuthorised()
+  }
+}
+
+object StrideAuthLogin {
+  private lazy val internal: Boolean =
+    ConfigFactory.load.getString("appName").contains("internal")
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.merchandiseinbaggage.support
+package uk.gov.hmrc.merchandiseinbaggage
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, Suite}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -27,18 +27,20 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
+import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.merchandiseinbaggage.CoreTestData
 import uk.gov.hmrc.merchandiseinbaggage.config.MongoConfiguration
 import uk.gov.hmrc.merchandiseinbaggage.model.core.DeclarationJourney
 import uk.gov.hmrc.merchandiseinbaggage.repositories.DeclarationJourneyRepository
-import play.api.test.CSRFTokenHelper._
+import uk.gov.hmrc.merchandiseinbaggage.support.StrideAuthLogin
+import uk.gov.hmrc.merchandiseinbaggage.wiremock.WireMockSupport
 
 trait BaseSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
 trait BaseSpecWithApplication
-    extends BaseSpec with GuiceOneServerPerSuite with WireMockSupport with MongoConfiguration with ScalaFutures with CoreTestData {
+    extends BaseSpec with GuiceOneServerPerSuite with WireMockSupport with StrideAuthLogin with MongoConfiguration with ScalaFutures
+    with CoreTestData { this: Suite =>
 
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(scaled(Span(5L, Seconds)), scaled(Span(500L, Milliseconds)))
@@ -68,5 +70,8 @@ trait BaseSpecWithApplication
   def givenADeclarationJourneyIsPersisted(declarationJourney: DeclarationJourney): DeclarationJourney =
     declarationJourneyRepository.insert(declarationJourney).futureValue
 
-  override def beforeEach(): Unit = declarationJourneyRepository.deleteAll().futureValue
+  override def beforeEach(): Unit = {
+    declarationJourneyRepository.deleteAll().futureValue
+    super.beforeEach()
+  }
 }
