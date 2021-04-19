@@ -17,6 +17,8 @@
 package uk.gov.hmrc.merchandiseinbaggage.pact
 
 import java.io.File
+import java.time.LocalDate
+
 import com.itv.scalapact.ScalaPactForger._
 import com.itv.scalapact.circe13._
 import com.itv.scalapact.model.{ScalaPactDescription, ScalaPactOptions}
@@ -24,19 +26,22 @@ import org.json4s.DefaultFormats
 import play.api.libs.json.Json
 import uk.gov.hmrc.merchandiseinbaggage.config.MibConfiguration
 import uk.gov.hmrc.merchandiseinbaggage.connectors.MibConnector
+import uk.gov.hmrc.merchandiseinbaggage.model.api.GoodsDestinations.GreatBritain
+import uk.gov.hmrc.merchandiseinbaggage.model.api.calculation.{CalculationResult, CalculationResults, WithinThreshold}
 import uk.gov.hmrc.merchandiseinbaggage.model.api.checkeori.CheckResponse
-import uk.gov.hmrc.merchandiseinbaggage.model.api.{Declaration, DeclarationId}
+import uk.gov.hmrc.merchandiseinbaggage.model.api.{AmountInPence, ConversionRatePeriod, Declaration, DeclarationId}
 import uk.gov.hmrc.merchandiseinbaggage.utils.DataModelEnriched._
 import uk.gov.hmrc.merchandiseinbaggage.{BaseSpecWithApplication, CoreTestData}
-import uk.gov.hmrc.merchandiseinbaggage.wiremock.WireMockSupport
 
-class MibConnectorContractSpec extends BaseSpecWithApplication with CoreTestData with MibConfiguration with WireMockSupport {
+class MibConnectorContractSpec extends BaseSpecWithApplication with CoreTestData with MibConfiguration {
 
   implicit val formats: DefaultFormats.type = DefaultFormats
 
   val CONSUMER = "merchandise-in-baggage-internal-frontend"
   val PROVIDER = "merchandise-in-baggage"
   val mibConnector = injector.instanceOf[MibConnector]
+  val today = LocalDate.now
+  val period = ConversionRatePeriod(today, today, "EUR", BigDecimal(1.1))
 
   val findByDeclaration: Declaration = declaration.copy(mibReference = mibReference, eori = eori)
 
@@ -78,8 +83,17 @@ class MibConnectorContractSpec extends BaseSpecWithApplication with CoreTestData
           s"$calculationsUrl",
           None,
           Map("Content-Type" -> "application/json"),
-          Json.toJson(List(aGoods).map(_.calculationRequest)).toString)
-        .willRespondWith(200, Json.toJson(List(aGoods).map(_.calculationRequest)).toString)
+          Json.toJson(List(aGoods).map(_.calculationRequest(GreatBritain))).toString)
+        .willRespondWith(
+          200,
+          Json
+            .toJson(
+              CalculationResults(
+                Seq(CalculationResult(aGoods, AmountInPence(18181), AmountInPence(0), AmountInPence(3636), Some(period))),
+                WithinThreshold
+              ))
+            .toString
+        )
     )
     .addInteraction(
       interaction
